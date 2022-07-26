@@ -8,6 +8,6 @@ void wprintf_(const wchar_t* fmt, ...) {
 	va_list va;
 	va_start(va, fmt);
 	vswprintf(buf, _CRT_INT_MAX, fmt, va);
-	WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), buf, (int)wcslen(buf) * sizeof(wchar_t), NULL, NULL);
+	WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), buf, (int)wcslen(buf), NULL, NULL);
 	va_end(va);
 }
