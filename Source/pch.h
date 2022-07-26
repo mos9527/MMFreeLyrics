@@ -24,6 +24,7 @@
 #include <string>
 #include <xstring>
 #include <vector>
+#include <mutex>
 
 #include <io.h>
 #include <fcntl.h>

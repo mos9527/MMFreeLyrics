@@ -12,8 +12,9 @@ static WNDPROC originalWndProc;
 static HWND window;
 
 #pragma region Sigatures
-const uint32_t* ValueThatChangesWhilistPlaying = (uint32_t*)0x1412EE338;
+const float* PVTimestamp = (float*)0x1412EE340;
 const uint32_t* PVEventFrame = (uint32_t*)0x1412EE324;
+const uint32_t* PVStopped = (uint32_t*)0x1412F0258;
 
 SIG_SCAN
 (
@@ -222,14 +223,13 @@ struct LyricManager {
 
 private:
     std::wstring line;
+    std::mutex lock;
     std::string songAudioName;
 
     uint32_t lastLyricsUpdateFrame;
     uint32_t lastUpdateFrame;
-    uint32_t lastChangingValue;
 
-    uint64_t lastRecordTime;
-    uint64_t timeElapsedSincePVStart;
+    float lastRecordedTime;
 
     DisplayStatus displayStatus;
     LyricDisplayType lyricDisplayType;
@@ -247,20 +247,16 @@ public:
         this->lyricSouldMoveType = None;
         this->lyricDisplayStatus = Ended;
         this->lastLyricsUpdateFrame = 0;
+
     }
-    uint64_t TimeElapsed() {
-        return this->timeElapsedSincePVStart;
+    float TimeElapsed() {
+        return *PVTimestamp;
     }
     std::wstring CurrentLyricLine() {
         return this->line;
     }
     std::string GetSongAudio() {
         return this->songAudioName;
-    }
-
-    void ResetTimer() {
-        this->timeElapsedSincePVStart = 0;
-        this->lastRecordTime = millis();
     }
     void OnLyricsBegin() {
         LOG(
@@ -277,34 +273,24 @@ public:
     }
     void OnTick() {
         if (this->lyricDisplayStatus != Ended) {
-            if (this->lastChangingValue != *ValueThatChangesWhilistPlaying) {
+            if (*PVStopped != 0){
                 this->lyricDisplayStatus = Progressing;
-                this->lastChangingValue = *ValueThatChangesWhilistPlaying;
-            }
-            else if (this->lyricDisplayStatus != Ready)
+                this->lastRecordedTime = this->TimeElapsed();
+            } else if (this->lyricDisplayStatus != Ready)
                 this->lyricDisplayStatus = Paused;
         }
 
-        if (this->displayStatus == OnScreen && this->lyricDisplayStatus == Progressing) {
-            if (this->timeElapsedSincePVStart == 0) // Occured right after ResetTimer();
-                this->OnLyricsBegin();
-            this->timeElapsedSincePVStart += millis() - this->lastRecordTime;
-            this->lastRecordTime = millis();
-        }
-
-        if (this->lastUpdateFrame > *PVEventFrame) {
-            this->ResetTimer();
-        }
-
-        if (*PVEventFrame - this->lastLyricsUpdateFrame > 30) // Linger for a while
+        if (*PVEventFrame - this->lastLyricsUpdateFrame > 5) // Linger for a while
             this->line.clear(); // No lyrics being displayed as in the original implmentation
+        
         this->lastUpdateFrame = *PVEventFrame;
-
     }    
     void SetLyricLine(bool isLyric , char* src) {
         if (isLyric) {
+            this->lock.lock();
             this->lastLyricsUpdateFrame = *PVEventFrame;
             this->line = u8string_to_wide_string(src);
+            this->lock.unlock();
         }
         else {
             this->lyricDisplayType = RyhthmGame;
@@ -315,11 +301,9 @@ public:
     }
     void UpdateGameState(const char* state) {       
         if (this->displayStatus == OnScreen && (strcmp(state,"PVsel") == 0)) {
-            this->ResetTimer();
             this->OnLyricsEnd();
         }else if (this->displayStatus != OnScreen && strcmp(state,"PV POST PROCESS TASK") == 0) {
             this->displayStatus = OnScreen;
-            this->ResetTimer(); 
             this->lyricDisplayType = PVMode;
             this->lyricDisplayStatus = Ready;
         }
@@ -327,7 +311,6 @@ public:
     bool ShowLyric() {
         return this->lyricDisplayStatus != Ended;
     }
-
     const char* GetCurrentLyricDisplayStatusString() {
         switch (this->lyricDisplayStatus) {
             case Ended: return "Ended";
@@ -345,7 +328,6 @@ public:
         }
         return "";
     }
-
     void OnImGUI() {
         // Debug messages
         if (this->showGUI) {
@@ -362,7 +344,7 @@ public:
                     this->GetCurrentLyricDisplayStatusString(),
                     *PVEventFrame,
                     this->GetCurrentLyricDisplayTypeString(),
-                    this->TimeElapsed() / 1000.0f
+                    this->TimeElapsed()
                 );
             }
             else {
@@ -426,8 +408,11 @@ public:
         ImGui::PushFont(fontManager.font);
         if (!this->ShowLyric())
             ImGui::Text(LYRIC_PLACEHOLDER_MESSAGE);
-        else
+        else {
+            this->lock.lock();
             ImGui::Text(wide_string_to_u8string(&this->CurrentLyricLine()[0]).c_str());
+            this->lock.unlock();
+        }
         ImGui::PopFont();        
         ImGui::End();
     }
