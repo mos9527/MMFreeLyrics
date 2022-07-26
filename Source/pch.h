@@ -5,6 +5,8 @@
 // Do not add files here that you will be updating frequently as this negates the performance advantage.
 #pragma once
 
+#define _ITERATOR_DEBUG_LEVEL 0
+// Disable checked iterators for std::string pointers to work with the game
 #define WIN32_LEAN_AND_MEAN
 
 #ifndef PCH_H
