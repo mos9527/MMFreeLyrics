@@ -27,12 +27,10 @@ First time modding a `C++` game...I have to say,It wasn't really pleasant ;(
 - Game won't change its internal resolution when resized
 
 ## TODO
-----
 - ~~Automatically build charset on startup~~
 - ~~Config file support~~
 
 ## References
-----
 https://github.com/ocornut/imgui
 
 https://github.com/ajkhoury/SigMaker-x64
