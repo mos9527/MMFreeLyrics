@@ -1,0 +1,21 @@
+author = "mos9527"
+name = "MegaMix+ FreeType Alternative Lyrics Renderer"
+enabled = true
+date = "26.07.2022"
+description = """
+MegaMix+ 第三方 FreeType 字幕渲染模块
+-使用前请将欲使用的字体放在与 Dll 同一目录下的 fonts 文件夹
+-使用歌词翻译模组时，若出现无法显示的字体，请将模组对应的 pv_db.txt 复制到本目录下，并更名为 charset.txt
+=======================
+热键
+  - [Ctrl+F] 字体样式窗口
+  - [Ctrl+G] 字幕样式窗口
+  - [Ctrl+S] 保存配置及窗口位置
+  - [Ctrl+L] 加载配置及窗口位置
+=======================
+mos9527,2022\
+"""
+version = "0.0.1b"
+dll = [
+"MMFreeLyrics.dll",
+]

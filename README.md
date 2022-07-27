@@ -12,12 +12,13 @@ a modded version that uses FT_Stroker to implement it.
 First time modding a `C++` game...I have to say,It wasn't really pleasant ;(
 
 ## Screenshots
-![](https://user-images.githubusercontent.com/31397301/180940279-31d58deb-e384-42cd-848b-48c7c3c74abf.png)
-![](https://user-images.githubusercontent.com/31397301/180940518-bab58460-5249-4d2e-b09a-d344d1249ddd.png)
-![](https://user-images.githubusercontent.com/31397301/180940285-d56ac403-31b0-45c1-a290-384ea331e7cf.png)
+![image](https://user-images.githubusercontent.com/31397301/181287341-59d3d235-72b9-4452-8d6e-9ff2daef60d7.png)
+![image](https://user-images.githubusercontent.com/31397301/181289185-4ab79121-dbd7-47b8-b4b1-ab079cdab79a.png)
+![image](https://user-images.githubusercontent.com/31397301/181289438-2de3cd42-f715-426a-b5df-ab56d76f6266.png)
 
 ## Building
 - Setup Freetype
+
     Freetype is managed via `vcpkg`
 
     You may use vcpkg with `vcpkg install freetype --triplet=x64-windows` + `vcpkg integrate install` to install it
@@ -28,7 +29,7 @@ First time modding a `C++` game...I have to say,It wasn't really pleasant ;(
 ## TODO
 ----
 - ~~Automatically build charset on startup~~
-- Config file support
+- ~~Config file support~~
 
 ## References
 ----

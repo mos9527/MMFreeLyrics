@@ -7,12 +7,18 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MMFreeLyrics", "MMFreeLyric
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Build Mod Archive|x64 = Build Mod Archive|x64
+		Build Mod Archive|x86 = Build Mod Archive|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{76724552-66B3-434D-B7C4-ABA3C6FC5E6F}.Build Mod Archive|x64.ActiveCfg = Build Mod Archive|x64
+		{76724552-66B3-434D-B7C4-ABA3C6FC5E6F}.Build Mod Archive|x64.Build.0 = Build Mod Archive|x64
+		{76724552-66B3-434D-B7C4-ABA3C6FC5E6F}.Build Mod Archive|x86.ActiveCfg = Build Mod Archive|Win32
+		{76724552-66B3-434D-B7C4-ABA3C6FC5E6F}.Build Mod Archive|x86.Build.0 = Build Mod Archive|Win32
 		{76724552-66B3-434D-B7C4-ABA3C6FC5E6F}.Debug|x64.ActiveCfg = Debug|x64
 		{76724552-66B3-434D-B7C4-ABA3C6FC5E6F}.Debug|x64.Build.0 = Debug|x64
 		{76724552-66B3-434D-B7C4-ABA3C6FC5E6F}.Debug|x86.ActiveCfg = Debug|Win32

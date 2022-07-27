@@ -29,7 +29,7 @@ std::wstring to_wstr(std::string utf8) {
     return u8string_to_wide_string(&utf8[0]);
 }
 
-std::wstring FullFilenameUnderDLLPath(std::wstring fileName) {
+std::wstring FullpathInDllFolder(std::wstring fileName) {
     std::wstring path = dllFilePath.substr(0, dllFilePath.find_last_of(L"/\\")) + L"\\" + fileName;
     return path;
 }

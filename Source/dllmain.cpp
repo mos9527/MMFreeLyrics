@@ -9,7 +9,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     wchar_t _buffer[512] = { 0 };
     switch (ul_reason_for_call)
     {
-    case DLL_PROCESS_ATTACH:        
+    case DLL_PROCESS_ATTACH:
         GetModuleFileNameW(hModule, _buffer, 512);
         dllFilePath.assign(_buffer);
         break;
