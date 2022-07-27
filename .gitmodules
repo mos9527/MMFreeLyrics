@@ -1,3 +1,6 @@
 [submodule "Dependencies/imgui"]
 	path = Dependencies/imgui
 	url = https://github.com/mos9527/imgui
+[submodule "Dependencies/toml11"]
+	path = Dependencies/toml11
+	url = https://github.com/ToruNiina/toml11
