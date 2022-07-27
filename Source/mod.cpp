@@ -437,7 +437,7 @@ public:
                 this->lyricSouldMoveType = None;
             }
         }
-        if (this->ShowLyric() && this->lyricIndex != 0)
+        if (this->ShowLyric() && this->lyricIndex <= 0)
             return; // Hide the window when we want to display lyrics but there's nothing to show
         ImGui::Begin(
             "Lyric Overlay", NULL,
