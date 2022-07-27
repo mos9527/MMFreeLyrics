@@ -1,6 +1,5 @@
 ﻿#include "pch.h"
-
-#define LYRIC_PLACEHOLDER_MESSAGE u8"初音未来 Project DIVA メガー・ミクス"
+#pragma warning( disable : 26495 26812 )
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // Data
@@ -11,11 +10,45 @@ static ID3D11RenderTargetView* g_mainRenderTargetView = NULL;
 static WNDPROC originalWndProc;
 static HWND window;
 
-#pragma region Sigatures
-const float* PVTimestamp = (float*)0x1412EE340;
-const uint32_t* PVEventFrame = (uint32_t*)0x1412EE324;
-const uint32_t* PVStopped = (uint32_t*)0x1412F0258;
+#pragma region Constant
+#define DEFAULT_CHARSET_NAME L"charset.txt"
+#define LYRIC_PLACEHOLDER_MESSAGE u8"初音未来 Project DIVA メガー・ミクス"
+#define CHARSET_NOTFOUND_WARNING_TITLE L"MegaMix+ Freetype Lyrics"
+#define CHARSET_NOTFOUND_WARNING_CONTENT L"Charset file " DEFAULT_CHARSET_NAME " not found. \n\n\
+If you're using non-English lyrics translation mod, This will probably cause some characters appears to be missing \n\n\
+In which case, you should copy their pv_db.txt file here alongside the DLLs, and rename it into " DEFAULT_CHARSET_NAME" .\n\n\
+Otherwise, it's safe to ignore this error."
 
+enum LanguageType {
+    Japanese = 0,
+    English = 1,
+    SChinese = 2,
+    TChinese = 3,
+    Korean = 4,
+    French = 5,
+    Italian = 6,
+    German = 7,
+    Spanish = 8
+};
+const uint8_t* Language = (uint8_t*)0x14CC105F4;
+const uint32_t* PVEvent = (uint32_t*)0x1412EE324;
+const uint32_t* PVPlaying = (uint32_t*)0x1412F0258;
+const float* PVTimestamp = (float*)0x1412EE340;
+struct PVWaitScreenInfoStruct {
+    std::string Name;
+    std::string Music;      // .music
+    std::string MusicVideo; // .illustrator
+    std::string Lyrics;     // .lyrics
+    std::string Arranger;   // .arranger
+    std::string Manipulator;// .manipulator
+    std::string PV;         // .pv_editor
+    std::string GuitarPlayer;//.guitar_player
+};
+PVWaitScreenInfoStruct* PVWaitScreenInfo = (PVWaitScreenInfoStruct*)0x14CC0B5F8;
+const char* LanguageTypeStrings[] = { u8"日本語",u8"English",u8"简体中文",u8"繁體中文",u8"한국어",u8"Français",u8"Italiano",u8"Deutsch",u8"Español" };
+const char* DisplayStatusStrings[] = { "On Screen","Not available" };
+const char* LyricDisplayTypeStrings[] = { "Ryhthm Game","PV Viewer","Not available" };
+const char* LyricDisplayStatusStrings[] = { "Ended","Playing","Paused","Ready" };
 SIG_SCAN
 (
     sigChangeGameState,
@@ -25,7 +58,7 @@ SIG_SCAN
 )
 SIG_SCAN
 (
-    sigRenderLyricMaybe,
+    sigRenderLyricAndTitle,
     0x14027B150,
     "\x48\x8B\xC4\x48\x89\x58\x08\x48\x89\x70\x10\x48\x89\x78\x18\x55\x48\x8D\x68\xD8\x48\x81\xEC\x00\x00\x00\x00\x0F\x29\x70\xE8\x0F\x29\x78\xD8\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x45\xF0\x48\x8B\x5D\x50\x41\x8B\xF9\x41\x8B\xF0\x0F\x28\xF1\x0F\x28\xF8",
     "xxxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxx"
@@ -37,23 +70,25 @@ SIG_SCAN
     "\x48\x89\x5C\x24\x00\x55\x56\x57\x48\x81\xEC\x00\x00\x00\x00\x0F\x29\xB4\x24\x00\x00\x00\x00\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x84\x24\x00\x00\x00\x00",
     "xxxx?xxxxxx????xxxx????xxx????xxxxxxx????"
 )
-
+SIG_SCAN
+(
+    sigUpdateLyrics,
+    0x140244CD0,
+    "\x48\x89\x5C\x24\x00\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x00\x48\x8B\xF9\x48\x8D\x99\x00\x00\x00\x00",
+    "xxxx?xxxxxxxx????xxxxxxx?xxxxxx????"
+)
 #pragma endregion
 
 struct FontManager {
-    enum FontType {
-        Chinese,
-        Japanese
-    };
-
 private:
     std::vector<std::string> fontsAvailable;
-    std::string * fontnameChinese;
-    std::string * fontnameJapanese;
+    std::string * fontnameDefault;
+    std::string * fontnameWithCharset;
     std::string charset;
     bool reloadFonts = false;
 
-    float fontSize = 40.0f;
+    float fontSize = 35.0f;
+    float fontSizeImGui = 13.0f;
     ImVec4 fillColor = ImVec4(1,1,1,0);
     ImVec4 strokeColor = ImVec4(0,0,0,0);
 
@@ -61,21 +96,38 @@ public:
     // Current combined font used for lyrics renderer
     ImFont* font;  
     bool showGUI = true;
-
     void Init() {
-        this->RefreshFontList();
-        this->fontnameChinese = &this->fontsAvailable[0];
-        this->fontnameJapanese = &this->fontsAvailable[this->fontsAvailable.size()-1];
-        // Read custom charset from file. We don't need to cover the entire CJK codepoints
-        std::ifstream f(to_utf8(FullFilenameUnderDLLPath(L"charset.txt")));
-        std::stringstream charbuf;
-        charbuf << f.rdbuf();
-        charset = charbuf.str();
-        LOG(L"Font charset size is %zd.\n", this->charset.size());
+        this->RefreshFontList();        
+        if (this->fontsAvailable.size() > 0) {
+            this->fontnameWithCharset = &this->fontsAvailable[0];
+            this->fontnameDefault = &this->fontsAvailable[this->fontsAvailable.size() - 1];
+        }
+        this->BuildCharset();
         this->RebuildFonts();
     }
-
-    std::vector<std::string> RefreshFontList() {
+    void BuildCharset() {
+        // Build charset via a hashtable
+        std::ifstream f(to_utf8(FullFilenameUnderDLLPath(DEFAULT_CHARSET_NAME)));
+        if (!f.is_open()) {
+            MessageBoxW(
+                window,
+                CHARSET_NOTFOUND_WARNING_CONTENT,
+                CHARSET_NOTFOUND_WARNING_TITLE,
+                MB_ICONEXCLAMATION
+            );
+            return;
+        }
+        std::stringstream charbuf; charbuf << f.rdbuf();
+        std::wstring chars = to_wstr(charbuf.str());
+        std::wstring charset_w;
+        std::map<wchar_t, int> table;
+        for (auto& c : chars) table[c] = 1;
+        for (auto& c : table) charset_w.push_back(c.first);
+        LOG(L"%zd unique characters (out of %zd) will be built into atlas.\n", charset_w.size(), chars.size());
+        this->charset = to_utf8(charset_w);        
+    }
+    /* Retrives all available fonts under the fonts\ directroy. Results are alphabetically sorted. */
+    std::vector<std::string>& RefreshFontList() {
         this->fontsAvailable.clear();
         for (auto file : std::filesystem::directory_iterator(to_utf8(FullFilenameUnderDLLPath(L"fonts\\")))) {
             std::wstring path = file.path();
@@ -84,37 +136,37 @@ public:
                 this->fontsAvailable.push_back(to_utf8(path));
             }
         }
+        std::sort(this->fontsAvailable.begin(), this->fontsAvailable.end());
         return this->fontsAvailable;
     }
-
     void SetDefaultStyles() {
         ImGuiStyle& style = ImGui::GetStyle();
         style.WindowBorderSize = 0.0f;
         style.WindowRounding = 12.0f;
-        LOG(L"Reseted ImGui styles.");
+        LOG(L"Reseted ImGui styles.\n");
     }
-
     void RebuildFonts() {        
         /* Fonts and glyph ranges*/
         ImGuiIO& io = ImGui::GetIO();     
         io.Fonts->Clear();
         // Default font will still be usable
-        io.Fonts->AddFontDefault();
         ImFontConfig config;
+        config.SizePixels = this->fontSizeImGui;
+        io.Fonts->AddFontDefault(&config);
         // Use our own stroking implmentation
         config.StrokeColor = IM_COL32(this->strokeColor.x * 255,this->strokeColor.y * 255, this->strokeColor.z * 255, 0);
         config.FillColor = IM_COL32(this->fillColor.x * 255, this->fillColor.y * 255, this->fillColor.z * 255, 0);
-        LOG(L"Building font atlas,please wait...\n");
-        if (this->fontnameJapanese) {
+        LOG(L"Now rebuilding fonts atlas,please wait...\n");
+        if (this->fontnameDefault) {
             io.Fonts->AddFontFromFileTTF(
-                this->fontnameJapanese->c_str(),
+                this->fontnameDefault->c_str(),
                 this->fontSize,
                 &config, // Merge into this font.
                 io.Fonts->GetGlyphRangesDefault()
             );
             config.MergeMode = true;
             io.Fonts->AddFontFromFileTTF(
-                this->fontnameJapanese->c_str(),
+                this->fontnameDefault->c_str(),
                 this->fontSize,
                 &config,
                 io.Fonts->GetGlyphRangesJapanese()
@@ -122,13 +174,17 @@ public:
         }
         ImVector<ImWchar> ranges;
         ImFontGlyphRangesBuilder builder;
-       
-        builder.AddText(this->charset.c_str());
+        if (this->charset.size() > 0)
+            builder.AddText(this->charset.c_str());
+        else {
+            LOG(L"Using fallback charset (Japanese / Romal) since custom charset isn't loaded.\n");
+            builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
+            builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
+        }
         builder.BuildRanges(&ranges);
-
-        if (this->fontnameChinese) {
+        if (this->fontnameWithCharset) {
             this->font = io.Fonts->AddFontFromFileTTF(
-                this->fontnameChinese->c_str(),
+                this->fontnameWithCharset->c_str(),
                 this->fontSize,
                 &config,
                 &ranges[0]
@@ -157,16 +213,30 @@ public:
     void OnImGUI() {
         if (!this->showGUI) return;
         ImGui::Begin("Fonts [Q]");
-        ImGui::Text("Current charset size (For Chinese): %d",this->charset.size());
+        ImGui::Text("Current charset size (Custom): %d",this->charset.size());
         ImGui::Separator();
         ImGui::Text("Select fonts");
 
-        if (ImGui::BeginCombo("Chinese", FilenameFromPath(*this->fontnameChinese).c_str())) {
+        if (ImGui::BeginCombo("Default (w/ Romal & Japanese charset)", FilenameFromPath(*this->fontnameDefault).c_str())) {
+            for (int i = 0; i < this->fontsAvailable.size(); i++) {
+                std::string* font = &fontsAvailable[i];
+                const bool isSelected = (font == this->fontnameDefault);
+                if (ImGui::Selectable(FilenameFromPath(*font).c_str(), isSelected)) {
+                    this->fontnameDefault = font;
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+        
+        if (ImGui::BeginCombo("Custom (w/ Custom Charset)", FilenameFromPath(*this->fontnameWithCharset).c_str())) {
             for (int i = 0; i < this->fontsAvailable.size();i++) {
                 std::string *font = &fontsAvailable[i];
-                const bool isSelected = (font == this->fontnameChinese);
+                const bool isSelected = (font == this->fontnameWithCharset);
                 if (ImGui::Selectable(FilenameFromPath(*font).c_str(), isSelected)) {
-                    this->fontnameChinese = font;
+                    this->fontnameWithCharset = font;
                 }
                 if (isSelected) {
                     ImGui::SetItemDefaultFocus();
@@ -175,21 +245,9 @@ public:
             ImGui::EndCombo();
         }
 
-        if (ImGui::BeginCombo("Japanese", FilenameFromPath(*this->fontnameJapanese).c_str())) {
-            for (int i = 0; i < this->fontsAvailable.size(); i++) {
-                std::string* font = &fontsAvailable[i];
-                const bool isSelected = (font == this->fontnameJapanese);
-                if (ImGui::Selectable(FilenameFromPath(*font).c_str(), isSelected)) {
-                    this->fontnameJapanese = font;
-                }
-                if (isSelected) {
-                    ImGui::SetItemDefaultFocus();
-                }
-            }
-            ImGui::EndCombo();
-        }
         ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),"WARNING : Going for a large font size might crash texture creation procedure!");
         ImGui::SliderFloat("Font Size", &this->fontSize, 10, 80,"%.1f");
+        ImGui::SliderFloat("ImGui Font Size", &this->fontSizeImGui, 10, 80, "%.1f");
         if (ImGui::Button("Scale+")) ImGui::GetIO().FontGlobalScale += 0.1f;
         ImGui::SameLine();
         if (ImGui::Button("Scale-")) ImGui::GetIO().FontGlobalScale -= 0.1f;
@@ -202,7 +260,6 @@ public:
         ImGui::End();
     }
 } fontManager;
-
 struct LyricManager {
 
     enum DisplayStatus {
@@ -226,42 +283,37 @@ private:
     std::mutex lock;
     std::string songAudioName;
 
-    uint32_t lastLyricsUpdateFrame;
-    uint32_t lastUpdateFrame;
+    int pvID=0;
+    int lyricIndex=0;
+    bool lyricUpdated = false;
 
-    float lastRecordedTime;
-
-    DisplayStatus displayStatus;
-    LyricDisplayType lyricDisplayType;
-    LyricDisplayStatus lyricDisplayStatus;
+    DisplayStatus displayStatus = NoLyric;
+    LyricDisplayType lyricDisplayType = None;
+    LyricDisplayStatus lyricDisplayStatus = Ended;
 
     float lyricWindowOpacity = 0.0f;
-    LyricDisplayType lyricSouldMoveType;
+    LyricDisplayType lyricSouldMoveType = None;
 
 public:
     bool showGUI = true;
-
-    void Init() {
-        this->displayStatus = NoLyric;
-        this->lyricDisplayType = None;
-        this->lyricSouldMoveType = None;
-        this->lyricDisplayStatus = Ended;
-        this->lastLyricsUpdateFrame = 0;
-
-    }
+    void Init() { }
     float TimeElapsed() {
         return *PVTimestamp;
     }
-    std::wstring CurrentLyricLine() {
+    std::wstring& CurrentLyricLine() {
         return this->line;
     }
-    std::string GetSongAudio() {
+    void SetSongAudio(const char* src) {
+        this->songAudioName.assign(src);
+        // TODO: find procedures where PV id is assigned instead of this hack
+        std::string filename = this->songAudioName.substr(songAudioName.find_last_of('/') + 1);        
+        sscanf_s(filename.c_str(),"pv_%d.ogg",&this->pvID);
+    }
+    std::string& GetSongAudio() {
         return this->songAudioName;
     }
     void OnLyricsBegin() {
-        LOG(
-            L"Started with audio %S.\n",            
-            this->songAudioName.c_str());        
+        LOG(L"Started with audio %S.\n",this->songAudioName.c_str());        
     }
     void OnLyricsEnd() {
         LOG(L"Ended.\n");
@@ -273,31 +325,31 @@ public:
     }
     void OnTick() {
         if (this->lyricDisplayStatus != Ended) {
-            if (*PVStopped != 0){
-                this->lyricDisplayStatus = Progressing;
-                this->lastRecordedTime = this->TimeElapsed();
+            if (*PVPlaying){
+                this->lyricDisplayStatus = Progressing;                
             } else if (this->lyricDisplayStatus != Ready)
                 this->lyricDisplayStatus = Paused;
-        }
-
-        if (*PVEventFrame - this->lastLyricsUpdateFrame > 5) // Linger for a while
-            this->line.clear(); // No lyrics being displayed as in the original implmentation
-        
-        this->lastUpdateFrame = *PVEventFrame;
+        }        
     }    
-    void SetLyricLine(bool isLyric , char* src) {
-        if (isLyric) {
+    void UpdateLyricIndex(int index) {
+        this->lyricIndex = index;
+        this->lyricUpdated = true;
+        if (index == 0)
+        {
             this->lock.lock();
-            this->lastLyricsUpdateFrame = *PVEventFrame;
+            this->line.clear();
+            this->lock.unlock();
+        }
+    }
+    void SetLyricLine(bool isLyric , char* src) {
+        if (this->lyricUpdated && isLyric) {
+            this->lock.lock();           
             this->line = u8string_to_wide_string(src);
             this->lock.unlock();
         }
         else {
             this->lyricDisplayType = RyhthmGame;
         }
-    }
-    void SetSongAudio(const char* src) {
-        this->songAudioName.assign(src);
     }
     void UpdateGameState(const char* state) {       
         if (this->displayStatus == OnScreen && (strcmp(state,"PVsel") == 0)) {
@@ -311,44 +363,31 @@ public:
     bool ShowLyric() {
         return this->lyricDisplayStatus != Ended;
     }
-    const char* GetCurrentLyricDisplayStatusString() {
-        switch (this->lyricDisplayStatus) {
-            case Ended: return "Ended";
-            case Progressing: return "Progressing";
-            case Paused: return "Paused";
-            case Ready: return "Ready";
-        }
-        return "";
-    }
-    const char* GetCurrentLyricDisplayTypeString() {
-        switch (this->lyricDisplayType) {
-            case PVMode: return "PV";
-            case RyhthmGame: return "Ryhthm Game";
-            case None: return "None";               
-        }
-        return "";
-    }
     void OnImGUI() {
-        // Debug messages
         if (this->showGUI) {
             ImGui::Begin("Lyric [W]");
-            ImGui::Text("Debug Status");
+            ImGui::Text("Debug Stats for PV%d",this->pvID);
             ImGui::Separator();
-            if (this->ShowLyric()) {
+            if (this->ShowLyric()) {               
+                ImGui::Text("[%s] %s Lyric : %s Arranger : %s",
+                    LanguageTypeStrings[(LanguageType)*Language], PVWaitScreenInfo->Name.c_str(), PVWaitScreenInfo->Lyrics.c_str(), PVWaitScreenInfo->Arranger.c_str()
+                );
+                ImGui::Separator();
                 ImGui::Text(
-                    "Playing %s",
+                    "Audio %s",
                     this->GetSongAudio().c_str()
                 );
                 ImGui::Text(
-                    "Status:%s PvEvent:%d Type:%s Time:%.2f s",
-                    this->GetCurrentLyricDisplayStatusString(),
-                    *PVEventFrame,
-                    this->GetCurrentLyricDisplayTypeString(),
+                    "Status:%s LyricId:%d Event:%d Type:%s Time:%.2f s",
+                    LyricDisplayStatusStrings[this->lyricDisplayStatus],
+                    this->lyricIndex,
+                    *PVEvent,
+                    LyricDisplayTypeStrings[this->lyricDisplayType],
                     this->TimeElapsed()
                 );
             }
             else {
-                ImGui::Text("No Lyric Type:%s", this->GetCurrentLyricDisplayTypeString());
+                ImGui::Text("No Lyric Type:%s", LyricDisplayTypeStrings[this->lyricDisplayType]);
             }            
             ImGui::Separator();
             ImGui::Text("Window Styling");
@@ -383,7 +422,7 @@ public:
             ImVec2 window_pos, window_pos_pivot;
             if (this->lyricSouldMoveType == PVMode) {
                 window_pos = viewport->GetWorkCenter();
-                window_pos.y = viewport->WorkSize.y * 0.9f;
+                window_pos.y = viewport->WorkSize.y * 0.85f;
                 window_pos_pivot = ImVec2(0.5f, 0.5f);
                 ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always,window_pos_pivot);
                 if (this->lyricDisplayType == PVMode) this->lyricSouldMoveType = PVMode;
@@ -392,19 +431,18 @@ public:
             else if (this->lyricSouldMoveType == RyhthmGame) {
                 window_pos = viewport->GetWorkCenter();
                 window_pos.x = viewport->WorkSize.x * 0.07f;
-                window_pos.y = viewport->WorkSize.y * 0.93f;
+                window_pos.y = viewport->WorkSize.y * 0.91f;
                 window_pos_pivot = ImVec2(0.0f, 0.5f);
                 ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
                 this->lyricSouldMoveType = None;
             }
         }
-        if (this->ShowLyric() && (this->CurrentLyricLine().size() == 0 || this->CurrentLyricLine()[0] == ' '))
+        if (this->ShowLyric() && this->lyricIndex != 0)
             return; // Hide the window when we want to display lyrics but there's nothing to show
         ImGui::Begin(
             "Lyric Overlay", NULL,
             ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
         );
-
         ImGui::PushFont(fontManager.font);
         if (!this->ShowLyric())
             ImGui::Text(LYRIC_PLACEHOLDER_MESSAGE);
@@ -417,7 +455,6 @@ public:
         ImGui::End();
     }
 } lyricManager;
-
 HOOK(char*, __fastcall, _LoadSongAudio, sigLoadSongAudio(), 
     __int64 a1,
     __int64 a2,
@@ -433,15 +470,13 @@ HOOK(char*, __fastcall, _LoadSongAudio, sigLoadSongAudio(),
     char* result = original_LoadSongAudio(a1,a2,a3,a4,a5,a6,a7,a8);
     return result;
 }
-
 HOOK(INT64, __fastcall, _ChangeGameState, sigChangeGameState(), INT64* a, const char* state) {
 	INT64 result = original_ChangeGameState(a, state);
 	LOG(L"Gamestate changed to : %S\n", state);
     lyricManager.UpdateGameState(state);
 	return result;
 }
-
-HOOK(void**, __fastcall, _RenderLyric, sigRenderLyricMaybe(),
+HOOK(void**, __fastcall, _RenderLyricAndTitle, sigRenderLyricAndTitle(),
     float type,
     float a2,
     unsigned int a3,
@@ -455,26 +490,29 @@ HOOK(void**, __fastcall, _RenderLyric, sigRenderLyricMaybe(),
     if (isLyric){        
         lyricManager.SetLyricLine(isLyric, text);
         return NULL;
-    } else {
-        lyricManager.SetLyricLine(isLyric, NULL);
-        void** result = original_RenderLyric(type, a2, a3, a4, text, a6, a7, a8);
+    } else {        
+        void** result = original_RenderLyricAndTitle(type, a2, a3, a4, text, a6, a7, a8);
         return result;
     }
 }
-
+HOOK(INT64, __fastcall, _UpdateLyrics, sigUpdateLyrics(), void* this_, int index, void* a3) {
+    INT64 result = original_UpdateLyrics(this_,index,a3);
+    lyricManager.UpdateLyricIndex(index);
+    return result;
+}
 void CreateRenderTarget()
 {
     ID3D11Texture2D* pBackBuffer;
     g_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
-    g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &g_mainRenderTargetView);
-    pBackBuffer->Release();
+    if (pBackBuffer) {
+        g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &g_mainRenderTargetView);
+        pBackBuffer->Release();
+    }
 }
-
 void CleanupRenderTarget()
 {
     if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = NULL; }
 }
-
 #define VK_Q 0x51
 #define VK_W 0x57
 LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -500,7 +538,6 @@ LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }    
     return CallWindowProc(originalWndProc, hWnd, uMsg, wParam, lParam);
 }
-
 extern "C"
 {
     void __declspec(dllexport) D3DInit(IDXGISwapChain* swapChain,
@@ -517,7 +554,7 @@ extern "C"
 
         originalWndProc = (WNDPROC)SetWindowLongPtrA(window, GWLP_WNDPROC, (LONG_PTR)WndProc);
         ImGui::CreateContext();
-        ImGui::GetIO().ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
+        ImGui::GetIO().ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard;
         
         lyricManager.Init();
         fontManager.Init();
@@ -525,15 +562,13 @@ extern "C"
         ImGui_ImplWin32_Init(window);
         ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
     }
-
     void __declspec(dllexport) Init() {
 		INSTALL_HOOK(_ChangeGameState);
-        INSTALL_HOOK(_RenderLyric);
+        INSTALL_HOOK(_RenderLyricAndTitle);
         INSTALL_HOOK(_LoadSongAudio);
-   
+        INSTALL_HOOK(_UpdateLyrics);
         LOG(L"Hooks installed.\n");           
     }
-
     void __declspec(dllexport) OnFrame(IDXGISwapChain* m_pSwapChain) {
         lyricManager.OnTick();
         fontManager.OnTick();

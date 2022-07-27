@@ -36,3 +36,5 @@ extern void* sigScan(const char* signature, const char* mask, void* hint = nullp
         } \
         return x##Addr; \
     }
+
+#define SIG_SCAN_ADDRESS_ONLY(x,y) SIG_SCAN(x,y,"\x00","?")

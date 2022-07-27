@@ -22,9 +22,12 @@ First time modding a `C++` game...I have to say,It wasn't really pleasant ;(
 
     You may use vcpkg with `vcpkg install freetype --triplet=x64-windows` + `vcpkg integrate install` to install it
 
+## Known Issues
+- Game won't change its internal resolution when resized
+
 ## TODO
 ----
-- Automatically build charset on startup
+- ~~Automatically build charset on startup~~
 - Config file support
 
 ## References

@@ -25,6 +25,8 @@
 #include <xstring>
 #include <vector>
 #include <mutex>
+#include <map>
+#include <algorithm>
 
 #include <io.h>
 #include <fcntl.h>
