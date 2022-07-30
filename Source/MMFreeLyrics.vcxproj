@@ -264,12 +264,14 @@ del "$(OutputPath)*.lib"</Command>
     <ClInclude Include="..\Dependencies\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\Dependencies\imgui\imstb_textedit.h" />
     <ClInclude Include="..\Dependencies\imgui\misc\freetype\imgui_freetype.h" />
-    <ClInclude Include="config.h" />
-    <ClInclude Include="helpers.h" />
-    <ClInclude Include="logging.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="sigscan.h" />
-    <ClInclude Include="utils.h" />
+    <ClInclude Include="managers\fonts.h" />
+    <ClInclude Include="managers\lyrics.h" />
+    <ClInclude Include="globals.h" />
+    <ClInclude Include="utils\config.h" />
+    <ClInclude Include="utils\helpers.h" />
+    <ClInclude Include="utils\logging.h" />
+    <ClInclude Include="utils\sigscan.h" />
+    <ClInclude Include="utils\stringutils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Dependencies\imgui\backends\imgui_impl_dx11.cpp">
@@ -307,24 +309,28 @@ del "$(OutputPath)*.lib"</Command>
     </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="logging.cpp" />
-    <ClCompile Include="mod.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="sigscan.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="managers\fonts.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="managers\lyrics.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="mod.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="utils\config.cpp" />
+    <ClCompile Include="utils\logging.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="utils\sigscan.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="utils\stringutils.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore" />
