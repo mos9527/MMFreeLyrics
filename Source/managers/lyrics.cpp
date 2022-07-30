@@ -67,7 +67,7 @@ void LyricManager::SetLyricLine(bool isLyric, char* src) {
         line = u8string_to_wide_string(src);
         lock.unlock();
     }
-    else {
+    else if (!isLyric) {
         lyricDisplayType = RyhthmGame;
     }
 }

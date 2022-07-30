@@ -1,6 +1,5 @@
 ﻿#include <globals.h>
 #pragma warning( disable : 26495 26812 )
-// Forward declare message handler from imgui_impl_win32.cpp
 #pragma region Sigatures
 SIG_SCAN
 (
@@ -63,9 +62,10 @@ HOOK(void**, __fastcall, _RenderLyricAndTitle, sigRenderLyricAndTitle(),
 {
     bool isLyric = x == 172.0f;    
     if (isLyric){        
-        LyricManager_Inst.SetLyricLine(isLyric, text);
+        LyricManager_Inst.SetLyricLine(true, text);
         return NULL;
     } else {        
+        LyricManager_Inst.SetLyricLine(false, NULL);
         void** result = original_RenderLyricAndTitle(x, y, scale, a4, text, a6, a7, a8);
         return result;
     }
@@ -96,7 +96,6 @@ void CleanupRenderTarget()
 #define KEY_PRESSED_WITH_CONTROL(K) KEY_PRESSED(K) && GetKeyState(VK_CONTROL)
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    /* Window procedure hook*/
     if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
         return true;    
     switch (uMsg) {  
