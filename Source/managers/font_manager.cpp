@@ -175,6 +175,7 @@ void FontManager::OnFrame() {
 /* Called by DX Hook's OnFrame. Do not override.*/
 void FontManager::OnImGUI() {
     if (!showGUI) return;
+    ImGui::SetNextWindowBgAlpha(0.5);
     ImGui::Begin("Fonts [Ctrl+F]");
     ImGui::Text("Note : The settings here don't reflect automatically. You need to apply it first.");
     ImGui::Text("Current charset size (Custom): %d", charset.size());

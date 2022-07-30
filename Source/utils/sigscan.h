@@ -6,11 +6,10 @@ extern void* sigScan(const char* signature, const char* mask, size_t sigSize, vo
 // Signature scan in current process
 extern void* sigScan(const char* signature, const char* mask, void* hint = nullptr);
 
-
 #define SIG_SCAN(x, y, ...) \
-    void* x(); \
-    void* x##Addr = x(); \
-    void* x() \
+    inline void* x(); \
+    inline void* x##Addr = x(); \
+    inline void* x() \
     { \
         constexpr const char* x##Data[] = { __VA_ARGS__ }; \
         constexpr size_t x##Size = _countof(x##Data); \

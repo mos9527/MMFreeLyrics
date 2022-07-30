@@ -79,6 +79,7 @@ void LyricManager::UpdateGameState(const char* state) {
         displayStatus = NoLyric;
         lyricDisplayStatus = Ended;
         lyricDisplayType = None;
+        lyricIndex = 0;
         OnLyricsEnd();
     }
     else if (displayStatus != OnScreen && strcmp(state, "PV POST PROCESS TASK") == 0) {
@@ -113,8 +114,9 @@ void LyricManager::OnFrame() {
 /* Called by DX Hook's OnFrame. Do not override.*/
 void LyricManager::OnImGUI() {
     if (showGUI) {
+        ImGui::SetNextWindowBgAlpha(0.5);
         ImGui::Begin("Lyric [Ctrl+G]");
-        if (!ShowLyric()) ImGui::Text("Idle");
+        ImGui::Text("Performance Metrics : %.1f FPS (%.3f ms)", ImGui::GetIO().Framerate , 1000.0f / ImGui::GetIO().Framerate);        
         ImGui::Separator();
         if (ShowLyric()) {
             ImGui::Text("Now Playing [PV %d] [%s]", pvID, LanguageTypeStrings[(LanguageType)*Language]);
@@ -196,12 +198,12 @@ void LyricManager::OnImGUI() {
             lyricSouldMoveType = None;
         }
     }
-    if (ShowLyric() && lyricIndex <= 0)
-        return; // Hide the window when we want to display lyrics but there's nothing to show
     ImGui::Begin(
         "Lyric Overlay", NULL,
         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing
     );
+    if (ShowLyric() && lyricIndex <= 0)
+        return ImGui::End(); // Hide the window when we want to display lyrics but there's nothing to show
     ImGui::PushFont(FontManager_Inst.font);
     if (!ShowLyric()) {
         if (showGUI) ImGui::Text(LYRIC_PLACEHOLDER_MESSAGE);

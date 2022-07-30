@@ -33,12 +33,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="managers\fonts.h">
-      <Filter>Header Files\managers</Filter>
-    </ClInclude>
-    <ClInclude Include="managers\lyrics.h">
-      <Filter>Header Files\managers</Filter>
-    </ClInclude>
     <ClInclude Include="utils\config.h">
       <Filter>Header Files\utils</Filter>
     </ClInclude>
@@ -81,6 +75,15 @@
     <ClInclude Include="globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="constant.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="managers\font_manager.h">
+      <Filter>Header Files\managers</Filter>
+    </ClInclude>
+    <ClInclude Include="managers\lyric_manager.h">
+      <Filter>Header Files\managers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -89,20 +92,8 @@
     <ClCompile Include="mod.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utils\logging.cpp">
-      <Filter>Source Files\utils</Filter>
-    </ClCompile>
     <ClCompile Include="utils\sigscan.cpp">
       <Filter>Source Files\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="utils\stringutils.cpp">
-      <Filter>Source Files\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="managers\fonts.cpp">
-      <Filter>Source Files\managers</Filter>
-    </ClCompile>
-    <ClCompile Include="managers\lyrics.cpp">
-      <Filter>Source Files\managers</Filter>
     </ClCompile>
     <ClCompile Include="..\Dependencies\imgui\imgui.cpp">
       <Filter>Source Files\imgui</Filter>
@@ -127,6 +118,12 @@
     </ClCompile>
     <ClCompile Include="utils\config.cpp">
       <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="managers\lyric_manager.cpp">
+      <Filter>Source Files\managers</Filter>
+    </ClCompile>
+    <ClCompile Include="managers\font_manager.cpp">
+      <Filter>Source Files\managers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

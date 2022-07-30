@@ -12,3 +12,5 @@ https://github.com/BroGamer4256/score-mm
 https://github.com/ActualMandM/DivaDllMods
 
 https://github.com/blueskythlikesclouds/DivaModLoader
+
+https://github.com/nastys/MEGAHAKUS

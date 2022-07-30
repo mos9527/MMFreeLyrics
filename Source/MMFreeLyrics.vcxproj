@@ -264,9 +264,10 @@ del "$(OutputPath)*.lib"</Command>
     <ClInclude Include="..\Dependencies\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\Dependencies\imgui\imstb_textedit.h" />
     <ClInclude Include="..\Dependencies\imgui\misc\freetype\imgui_freetype.h" />
-    <ClInclude Include="managers\fonts.h" />
-    <ClInclude Include="managers\lyrics.h" />
+    <ClInclude Include="managers\font_manager.h" />
+    <ClInclude Include="managers\lyric_manager.h" />
     <ClInclude Include="globals.h" />
+    <ClInclude Include="constant.h" />
     <ClInclude Include="utils\config.h" />
     <ClInclude Include="utils\helpers.h" />
     <ClInclude Include="utils\logging.h" />
@@ -311,10 +312,10 @@ del "$(OutputPath)*.lib"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="managers\fonts.cpp">
+    <ClCompile Include="managers\font_manager.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="managers\lyrics.cpp">
+    <ClCompile Include="managers\lyric_manager.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="mod.cpp">
@@ -322,13 +323,7 @@ del "$(OutputPath)*.lib"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="utils\config.cpp" />
-    <ClCompile Include="utils\logging.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="utils\sigscan.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="utils\stringutils.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>

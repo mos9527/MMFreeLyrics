@@ -1,6 +1,6 @@
 ﻿#include <globals.h>
 #pragma warning( disable : 26495 26812 )
-#pragma region Sigatures
+// Signatures
 SIG_SCAN
 (
     sigChangeGameState,
@@ -29,7 +29,13 @@ SIG_SCAN
     "\x48\x89\x5C\x24\x00\x57\x48\x83\xEC\x50\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x00\x48\x8B\xF9\x48\x8D\x99\x00\x00\x00\x00",
     "xxxx?xxxxxxxx????xxxxxxx?xxxxxx????"
 )
-#pragma endregion
+SIG_SCAN
+(
+    sigGetInputState,
+    0x1402AC960,
+    "\x4C\x8B\x05\x00\x00\x00\x00\x4D\x85\xC0\x74\x35\x4C\x63\xC9\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00\x49\x8B\x48\x08\x49\x2B\x08\x48\xF7\xE9",
+    "xxx????xxxxxxxxxx????????xxxxxxxxxx"
+)
 HOOK(char*, __fastcall, _LoadSongAudio, sigLoadSongAudio(), 
     __int64 a1,
     __int64 a2,
@@ -44,12 +50,14 @@ HOOK(char*, __fastcall, _LoadSongAudio, sigLoadSongAudio(),
     char* result = original_LoadSongAudio(a1,a2,a3,a4,a5,a6,a7,a8);
     return result;
 }
+
 HOOK(INT64, __fastcall, _ChangeGameState, sigChangeGameState(), INT64* a, const char* state) {
 	INT64 result = original_ChangeGameState(a, state);
 	LOG(L"Gamestate changed to : %S", state);
     LyricManager_Inst.UpdateGameState(state);
 	return result;
 }
+
 HOOK(void**, __fastcall, _RenderLyricAndTitle, sigRenderLyricAndTitle(),
     float x,
     float y,
@@ -70,11 +78,24 @@ HOOK(void**, __fastcall, _RenderLyricAndTitle, sigRenderLyricAndTitle(),
         return result;
     }
 }
+
 HOOK(INT64, __fastcall, _UpdateLyrics, sigUpdateLyrics(), void* this_, int index, void* a3) {
     INT64 result = original_UpdateLyrics(this_,index,a3);
     LyricManager_Inst.UpdateLyricIndex(index);
     return result;
 }
+
+HOOK(DivaInputState*, __fastcall, _GetInputState, sigGetInputState(), int player) {
+    // TODO: Use this for ImGui's input handler
+    // MM+ uses DirectInput for its main game.
+    // But since there's no way to capture all keystrokes with this hook, I'll leave this as is.
+    // Turns out dw_gui uses Win32 WndProc to handle K&M input as well...
+    DivaInputState* result = original_GetInputState(player);
+    if (result && (ImGui::GetIO().WantCaptureKeyboard || ImGui::GetIO().WantCaptureMouse))
+        memset(result, 0, sizeof(DivaInputState));
+    return result;
+}
+
 void CreateRenderTarget()
 {
     ID3D11Texture2D* pBackBuffer;
@@ -84,14 +105,16 @@ void CreateRenderTarget()
         pBackBuffer->Release();
     }
 }
+
 void CleanupRenderTarget()
 {
     if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = NULL; }
 }
+
 #define VK_F 0x46
 #define VK_G 0x47
-#define VK_S 0x53
 #define VK_L 0x4C
+#define VK_S 0x53
 #define KEY_PRESSED(K) LOWORD(wParam) == K
 #define KEY_PRESSED_WITH_CONTROL(K) KEY_PRESSED(K) && GetKeyState(VK_CONTROL)
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -170,6 +193,7 @@ extern "C"
         INSTALL_HOOK(_RenderLyricAndTitle);
         INSTALL_HOOK(_LoadSongAudio);
         INSTALL_HOOK(_UpdateLyrics);
+        INSTALL_HOOK(_GetInputState);
         ImGui::CreateContext();
         SET_IMGUI_DEFAULT_FLAGS;
         LOG(L"Hooks installed.");           
