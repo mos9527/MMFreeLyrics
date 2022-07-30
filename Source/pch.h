@@ -43,6 +43,7 @@
 #include <imgui.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
+#include <imgui/misc/freetype/imgui_freetype.h>
 
 #include <toml.hpp>
 
@@ -60,7 +61,7 @@ extern std::wstring dllFilePath;
 If you're using non-English lyrics translation mod, This will probably cause some characters appears to be missing \n\n\
 In which case, you should copy their pv_db.txt file here alongside the DLLs, and rename it into " DEFAULT_CHARSET_NAME" .\n\n\
 Otherwise, it's safe to ignore this error."
-#define LYRIC_PLACEHOLDER_MESSAGE u8"初音未来 Project DIVA メガー・ミクス"
+#define LYRIC_PLACEHOLDER_MESSAGE u8"初音ミク Project DIVA メガー・ミクス"
 
 // Data
 static ID3D11Device* g_pd3dDevice = NULL;

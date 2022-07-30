@@ -87,8 +87,14 @@ private:
 
     float fontSize;
     float fontSizeImGui;
+    bool isBold;
+    bool isItalic;
     ImVec4 fillColor;
     ImVec4 strokeColor;
+    ImVec4 shadowColor;
+    ImVec2 shadowOffset;
+
+    int strokeSize;
 
 public:
     // Current combined font used for lyrics renderer
@@ -115,9 +121,14 @@ public:
         // Font Styles
         fontSize = cfg.fontSize;
         fontSizeImGui = cfg.fontSizeImGui;
+        isBold = cfg.isBold;
+        isItalic = cfg.isItalic;
         ImGui::GetIO().FontGlobalScale = cfg.FontGlobalScale;
         fillColor = cfg.fillColor;
         strokeColor = cfg.strokeColor;
+        shadowColor = cfg.shadowColor;
+        strokeSize = cfg.strokeSize;
+        shadowOffset = cfg.shadowOffset;
         showGUI = cfg.showFontManagerGUI;
         return cfg;
     }
@@ -128,13 +139,17 @@ public:
         // Font Styles
         cfg.fontSize = fontSize;
         cfg.fontSizeImGui = fontSizeImGui;
+        cfg.isBold = isBold;
+        cfg.isItalic = isItalic;
         cfg.FontGlobalScale = ImGui::GetIO().FontGlobalScale;
         cfg.fillColor = fillColor;
         cfg.strokeColor = strokeColor;
+        cfg.shadowColor = shadowColor;
+        cfg.strokeSize = strokeSize;
+        cfg.shadowOffset = shadowOffset;
         cfg.showFontManagerGUI = showGUI;
         return cfg;
-    }
-    
+    }    
     void BuildCharset() {
         // Build charset via a hashtable
         std::ifstream f(to_utf8(FullpathInDllFolder(DEFAULT_CHARSET_NAME)));
@@ -147,6 +162,7 @@ public:
             );
             return;
         }
+        LOG(L"Enumerating unique characters...\n");
         std::stringstream charbuf; charbuf << f.rdbuf();
         std::wstring chars = to_wstr(charbuf.str());
         std::wstring charset_w;
@@ -169,6 +185,7 @@ public:
         std::sort(fontsAvailable.begin(), fontsAvailable.end());
         return fontsAvailable;
     }
+    #define VEC4_TO_COL32(name) IM_COL32(name.x*255,name.y*255,name.z*255,name.w*255)
     void RebuildFonts() {                
         ImGuiIO& io = ImGui::GetIO();     
         io.Fonts->Clear();
@@ -176,9 +193,15 @@ public:
         ImFontConfig config;
         config.SizePixels = fontSizeImGui;
         io.Fonts->AddFontDefault(&config);
-        // Use our own stroking implmentation
-        config.StrokeColor = IM_COL32(strokeColor.x * 255,strokeColor.y * 255, strokeColor.z * 255, 0);
-        config.FillColor = IM_COL32(fillColor.x * 255, fillColor.y * 255, fillColor.z * 255, 0);
+        // Setting up styles
+        config.ShadowOffset = shadowOffset;       
+        config.StrokeSize = strokeSize;      
+        if (isBold) config.FontBuilderFlags |= ImGuiFreeTypeBuilderFlags_Bold;
+        if (isItalic) config.FontBuilderFlags |= ImGuiFreeTypeBuilderFlags_Oblique;
+        config.StrokeColor = VEC4_TO_COL32(strokeColor);
+        config.FillColor = VEC4_TO_COL32(fillColor);
+        config.ShadowColor = VEC4_TO_COL32(shadowColor);    
+
         LOG(L"Now rebuilding fonts atlas,please wait...\n");
         if (fontnameDefault) {
             io.Fonts->AddFontFromFileTTF(
@@ -233,11 +256,10 @@ public:
     void OnImGUI() {
         if (!showGUI) return;
         ImGui::Begin("Fonts [Ctrl+F]");
+        ImGui::Text("Note : The settings here don't reflect automatically. You need to apply it first.");
         ImGui::Text("Current charset size (Custom): %d",charset.size());
-        ImGui::Separator();
-        ImGui::Text("Select fonts");
-
-        if (ImGui::BeginCombo("Default (w/ Romal & Japanese charset)", FilenameFromPath(*fontnameDefault).c_str())) {
+        ImGui::Text("Fonts");
+        if (ImGui::BeginCombo("Default (w/ Romal & Japanese charset)", FilenameFromPath(*fontnameDefault).c_str() + 1)) {
             for (int i = 0; i < fontsAvailable.size(); i++) {
                 std::string* font = &fontsAvailable[i];
                 const bool isSelected = (font == fontnameDefault);
@@ -251,7 +273,7 @@ public:
             ImGui::EndCombo();
         }
         
-        if (ImGui::BeginCombo("Custom (w/ Custom Charset)", FilenameFromPath(*fontnameWithCharset).c_str())) {
+        if (ImGui::BeginCombo("Fallback (w/ Custom Charset)", FilenameFromPath(*fontnameWithCharset).c_str() + 1)) {
             for (int i = 0; i < fontsAvailable.size();i++) {
                 std::string *font = &fontsAvailable[i];
                 const bool isSelected = (font == fontnameWithCharset);
@@ -264,16 +286,44 @@ public:
             }
             ImGui::EndCombo();
         }
-
-        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),"WARNING : Going for a large font size might crash texture creation procedure!");
+        ImGui::Separator();
+        ImGui::Text("Font Size");
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),"WARNING : Going for a large font size might crash the texture creation procedure!");
         ImGui::SliderFloat("Font Size", &fontSize, 10, 80,"%.1f");
         ImGui::SliderFloat("ImGui Font Size", &fontSizeImGui, 10, 80, "%.1f");
-        ImGui::Text("Global Scaling: %.1f", ImGui::GetIO().FontGlobalScale);
+        ImGui::SliderInt("Stroke Size", &strokeSize, 0, 10);
+        
+        ImGui::Separator();
+        ImGui::Text("Shadows");        
+        ImGui::Text("Shadow X=%.0f", shadowOffset.x);
+        ImGui::SameLine();
+        if (ImGui::Button("  Left  ")) shadowOffset.x = -2;
+        ImGui::SameLine();
+        if (ImGui::Button("H.Center")) shadowOffset.x = 0;
+        ImGui::SameLine();
+        if (ImGui::Button("  Right ")) shadowOffset.x = 2;        
+
+        ImGui::Text("Shadow Y=%.0f", shadowOffset.y);
+        ImGui::SameLine();
+        if (ImGui::Button("  Top   ")) shadowOffset.y = -2;
+        ImGui::SameLine();
+        if (ImGui::Button("V.Center")) shadowOffset.y = 0;
+        ImGui::SameLine();
+        if (ImGui::Button(" Bottom ")) shadowOffset.y = 2;        
+
+        ImGui::Separator();
+        ImGui::Text("Font Colors & Misc");
+        ImGui::ColorEdit4("Fill", (float*)&fillColor);
+        ImGui::ColorEdit4("Stroke", (float*)&strokeColor);
+        ImGui::ColorEdit4("Shadow", (float*)&shadowColor);
+        ImGui::Checkbox("Bold", &isBold);
+        ImGui::SameLine();
+        ImGui::Checkbox("Italic", &isItalic);
+        ImGui::Text("Scaling: %.1f", ImGui::GetIO().FontGlobalScale);
         if (ImGui::Button("Scale+")) ImGui::GetIO().FontGlobalScale += 0.1f;
         ImGui::SameLine();
         if (ImGui::Button("Scale-")) ImGui::GetIO().FontGlobalScale -= 0.1f;
-        ImGui::ColorEdit4("FillColor", (float*)&fillColor, ImGuiColorEditFlags_NoAlpha);
-        ImGui::ColorEdit4("StrokeColor", (float*)&strokeColor, ImGuiColorEditFlags_NoAlpha);
+        ImGui::Separator();                
         WINDOW_SAVE_SELECTOR;
         ImGui::SameLine();
         if (ImGui::Button("Save & Apply")) {

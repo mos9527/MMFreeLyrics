@@ -21,7 +21,7 @@ First time modding a `C++` game...I have to say,It wasn't really pleasant ;(
 
     Freetype is managed via `vcpkg`
 
-    You may use vcpkg with `vcpkg install freetype --triplet=x64-windows` + `vcpkg integrate install` to install it
+    You may install it via `vcpkg install freetype --triplet=x64-windows` + `vcpkg integrate install` to install it
 
 ## Known Issues
 - Game won't change its internal resolution when resized
