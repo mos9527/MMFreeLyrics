@@ -1,6 +1,7 @@
 #include <globals.h>
 
 void LyricManager::Init(Config& cfg) {
+    styleTestString.assign(LYRIC_PLACEHOLDER_MESSAGE);
     FromConfig(cfg);
 }
 
@@ -83,6 +84,7 @@ void LyricManager::UpdateGameState(const char* state) {
         OnLyricsEnd();
     }
     else if (displayStatus != OnScreen && strcmp(state, "PV POST PROCESS TASK") == 0) {
+        line.clear();
         displayStatus = OnScreen;
         lyricDisplayType = PVMode;
         lyricDisplayStatus = Ready;
@@ -200,13 +202,20 @@ void LyricManager::OnImGUI() {
     }
     ImGui::Begin(
         "Lyric Overlay", NULL,
-        ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing
+        (!ShowLyric() && showGUI) ? ImGuiWindowFlags_NoDecoration : (ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing)
     );
     if (ShowLyric() && lyricIndex <= 0)
         return ImGui::End(); // Hide the window when we want to display lyrics but there's nothing to show
     ImGui::PushFont(FontManager_Inst.font);
-    if (!ShowLyric()) {
-        if (showGUI) ImGui::Text(LYRIC_PLACEHOLDER_MESSAGE);
+    if (!ShowLyric() && showGUI) {
+        // Allow the user to edit the text for style testing
+        ImVec2 size = ImGui::CalcTextSize(styleTestString.c_str());
+        size.x *= 2;
+        size.y *= 2; // TODO : Correct windows size
+        ImGui::SetWindowSize(size, ImGuiCond_Always);
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 0, 0, 0));
+        ImGui::InputText("###", &styleTestString, 1024);
+        ImGui::PopStyleColor();
     }
     else {
         lock.lock();

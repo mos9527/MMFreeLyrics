@@ -23,6 +23,7 @@ private:
     std::wstring line;
     std::mutex lock;
     std::string songAudioName;
+    std::string styleTestString;
 
     int pvID = 0;
     int lyricIndex = 0;

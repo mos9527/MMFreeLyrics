@@ -1,6 +1,6 @@
 ﻿#pragma once
 #define _ITERATOR_DEBUG_LEVEL 0
-// Disable checked iterators for std::string pointers to work with the game
+// Disable checked iterators for std::string pointers (and etc) to work with the game
 #define WIN32_LEAN_AND_MEAN
 // Standard Libaries
 #include <cstdint>
@@ -24,6 +24,7 @@
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 #include <imgui/misc/freetype/imgui_freetype.h>
+#include <imgui/misc/cpp/imgui_stdlib.h>
 #include <toml.hpp>
 // DirectX
 #include <d3d11.h>
