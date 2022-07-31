@@ -17,19 +17,53 @@
 - 兼容歌词 MOD
 
 ## MOD 演示
-[初音未来 Project DIVA MEGA 39's PC FreeType 歌词渲染 MOD - Bilibili](...)
+[[MOD 演示] 初音未来 Project DIVA MEGA 39's FreeType 歌词渲染](https://www.bilibili.com/video/BV1ha411N7qQ)
 
 ## MOD 安装
-- 安装 [DivaModManager](https://github.com/TekkaGB/DivaModManager)
+- 使用 [DivaModManager](https://github.com/TekkaGB/DivaModManager) 安装
+    - 或直接使用 [DivaModLoader](https://github.com/blueskythlikesclouds/DivaModLoader)
+    - 可参考 [初音未来 Project DIVA MEGA39’s＋帧数解锁和歌曲汉化MOD安装流程](https://www.bilibili.com/read/cv16871246)，并在游戏根目录下的 `config.toml` 中 `priority` 项添加 `MMFreeLyrics`
 - 在 [Release](https://github.com/mos9527/MMFreeLyrics/releases) 下载本 MOD
-- 解压至游戏文件夹 `mods` 目录
-- 在本模组目录中创建文件夹 `fonts`，将自己想用的字体文件(`.ttf`,`.otf`) 放入其中
+- 解压至游戏文件夹 `mods\MMFreeLyrics` 目录
+- 在模组目录中创建文件夹 `fonts`，将自己想用的字体文件(`.ttf`,`.otf`) 放入其中
     - 注：文件名最好使用英文。中文名称能够被使用，但字体名不会被正常显示。
 - 如果还使用了歌词翻译 MOD
     - 将翻译模组文件夹内的 `pv_db.txt` 复制于本模组目录
     - 更名为 `charset.txt`
     - 否则中文子集等可能无法正常显示
-- 利用 `DivaModManager` 启动游戏
+- 正确配置的模组目录应有如下结构
+    
+        HATSUNE MIKU PROJECT DIVA MEGA MIX PLUS\MODS\MMFREELYRICS
+        │   brotlicommon.dll
+        │   brotlidec.dll
+        │   bz2.dll
+        │   bz2d.dll
+        │   charset.txt
+        │   config.toml
+        │   freetype.dll
+        │   freetyped.dll
+        │   libpng16.dll
+        │   libpng16d.dll
+        │   MMFreeLyrics.dll
+        │   zlib1.dll
+        │   zlibd1.dll
+        │
+        └───fonts
+                font_1.ttf
+                font_2.otf
+                ...
+- 启动游戏
+
+## MOD 使用
+这里只介绍一些热键，详情可参考 MOD 演示
+
+|热键|功能|
+|-|-|
+Ctrl+F|打开游戏内字体窗口
+Ctrl+G|打开游戏内歌词窗口
+Ctrl+S|保存配置
+Ctrl+L|载入配置
+
 ----
 
 ## References
