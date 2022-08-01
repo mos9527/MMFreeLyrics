@@ -78,3 +78,9 @@ inline uint32_t readUnalignedU32(void* memory)
 	uint8_t* p = (uint8_t*)memory;
 	return p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
 }
+
+inline uint64_t readUnalignedU64(void* memory)
+{
+	uint8_t* p = (uint8_t*)memory;
+	return (uint64_t)p[0] | ((uint64_t)p[1] << 8) | ((uint64_t)p[2] << 16) | ((uint64_t)p[3] << 24) | ((uint64_t)p[4]<<32) | ((uint64_t)p[5] << 40) | ((uint64_t)p[6] << 48) | ((uint64_t)p[7] << 56);
+}

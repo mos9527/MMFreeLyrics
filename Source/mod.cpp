@@ -38,6 +38,13 @@ SIG_SCAN
     "\x4C\x8B\x05\x00\x00\x00\x00\x4D\x85\xC0\x74\x35\x4C\x63\xC9\x48\xB8\x00\x00\x00\x00\x00\x00\x00\x00\x49\x8B\x48\x08\x49\x2B\x08\x48\xF7\xE9",
     "xxx????xxxxxxxxxx????????xxxxxxxxxx"
 )
+SIG_SCAN
+(
+    sigCopyCharsByCount,
+    0x140192673,
+    "\x48\x8B\xC2\x4D\x85\xC0\x74\x26\x4D\x8D\x48\xFF\x4C\x03\xC9\x49\x3B\xC9\x74\x17\x44\x0F\xB6\x00",
+    "xxxxxxxxxxxxxxxxxxxxxxxx"
+)
 HOOK(char*, __fastcall, _LoadSongAudio, sigLoadSongAudio(), 
     __int64 a1,
     __int64 a2,
@@ -72,7 +79,7 @@ HOOK(void**, __fastcall, _RenderLyricAndTitle, sigRenderLyricAndTitle(),
 {
     bool isLyric = x == 172.0f;    
     if (isLyric){        
-        LyricManager_Inst.SetLyricLine(true, text);
+        // Disable game lyrics since we are rendering it ourselves
         return NULL;
     } else {        
         LyricManager_Inst.SetLyricLine(false, NULL);
@@ -97,7 +104,13 @@ HOOK(DivaInputState*, __fastcall, _GetInputState, sigGetInputState(), int player
         memset(result, 0, sizeof(DivaInputState));
     return result;
 }
-
+HOOK(char, __fastcall, _CopyCharsByCount, sigCopyCharsByCount(), char* out, char* in, int length) {
+    if (length == 0x4C) {
+        // Magic number! 78 chars max, huh?
+        LyricManager_Inst.SetLyricLine(true, in);
+    }
+    return original_CopyCharsByCount(out, in, length);    
+}
 void CreateRenderTarget()
 {
     ID3D11Texture2D* pBackBuffer;
@@ -196,6 +209,7 @@ extern "C"
         INSTALL_HOOK(_LoadSongAudio);
         INSTALL_HOOK(_UpdateLyrics);
         INSTALL_HOOK(_GetInputState);
+        INSTALL_HOOK(_CopyCharsByCount);
         ImGui::CreateContext();
         SET_IMGUI_DEFAULT_FLAGS;
         LOG(L"Hooks installed.");           

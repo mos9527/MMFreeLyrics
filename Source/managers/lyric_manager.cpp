@@ -34,7 +34,7 @@ float LyricManager::TimeElapsed() {
     return *PVTimestamp;
 }
 
-/* Current line of lyrics being displayed. This only gets updated when the source is updated. */
+/* Current line of lyrics being displayed. */
 std::wstring& LyricManager::GetCurrentLyricLine() {
     return internalLyricLine;
 }
@@ -52,7 +52,6 @@ std::string& LyricManager::GetSongAudio() {
 /* Set current index of lyric and flag for line updates. */
 void LyricManager::UpdateLyricIndex(int index) {
     lyricIndex = index;
-    lyricUpdated = true;
     if (index == 0)
     {
         lock.lock();
@@ -61,14 +60,14 @@ void LyricManager::UpdateLyricIndex(int index) {
     }
 }
 
-/* Set current lyric line with a lock. Only works when UpdateLyricIndex flagged for updates. */
+/* Set current lyric line with a lock. */
 void LyricManager::SetLyricLine(bool isLyric, char* src) {
-    if (lyricUpdated && isLyric) {
-        lock.lock();
+    if (isLyric) {
+        lock.lock();        
         internalLyricLine = u8string_to_wide_string(src);
         lock.unlock();
     }
-    else if (!isLyric) {
+    else {
         lyricDisplayType = RyhthmGame;
     }
 }

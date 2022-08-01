@@ -27,7 +27,6 @@ private:
     std::string styleTestString;
 
     int lyricIndex = 0;
-    bool lyricUpdated = false;
     std::vector<SubtitleItem*> externalLyrics;
 
     DisplayStatus displayStatus = NoLyric;
