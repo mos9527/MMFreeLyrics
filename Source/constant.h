@@ -7,7 +7,7 @@
 If you're using non-English lyrics translation mod, This will probably cause some characters appears to be missing \n\n\
 In which case, you should copy their pv_db.txt file here alongside the DLLs, and rename it into " DEFAULT_CHARSET_NAME" .\n\n\
 Otherwise, it's safe to ignore this error."
-#define LYRIC_PLACEHOLDER_MESSAGE u8"初音ミク Project DIVA FreeType Lyrics"
+#define LYRIC_PLACEHOLDER_MESSAGE u8"初音ミク♡Project DIVA FreeType Lyrics"
 static const char* LanguageTypeStrings[] = { u8"Japanese",u8"English",u8"SChinese",u8"TChinese",u8"Korean",u8"French",u8"Italian",u8"German",u8"Spanish" };
 static const char* DisplayStatusStrings[] = { "On Screen","Not available" };
 static const char* LyricDisplayTypeStrings[] = { "Ryhthm Game","PV Viewer","Not available" };
@@ -58,8 +58,9 @@ enum LanguageType {
 };
 inline const uint8_t* Language = (uint8_t*)0x14CC105F4;
 inline const uint32_t* PVEvent = (uint32_t*)0x1412EE324;
-inline const uint32_t* PVPlaying = (uint32_t*)0x1412F0258;
 inline const float* PVTimestamp = (float*)0x1412EE340;
+inline const uint32_t* PVPlaying = (uint32_t*)0x1412F0258;
+inline const uint32_t* PVID = (uint32_t*)0x1416E2BB0;
 struct PVWaitScreenInfoStruct {
     std::string Name;
     std::string Music;      // .music

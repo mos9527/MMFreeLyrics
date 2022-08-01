@@ -1,4 +1,5 @@
 #include <globals.h>
+#include <managers/lyric_manager.h>
 
 void LyricManager::Init(Config& cfg) {
     styleTestString.assign(LYRIC_PLACEHOLDER_MESSAGE);
@@ -8,6 +9,7 @@ void LyricManager::Init(Config& cfg) {
 Config& LyricManager::FromConfig(Config& cfg) {
     lyricWindowOpacity = cfg.lyricWindowOpacity;
     showGUI = cfg.showLyricsManagerGUI;
+    useExternalLyrics = cfg.useExternalLyrics;
     ImGui::GetStyle().WindowBorderSize = cfg.WindowBorderSize;
     ImGui::GetStyle().WindowRounding = cfg.WindowRounding;
     return cfg;
@@ -16,6 +18,7 @@ Config& LyricManager::FromConfig(Config& cfg) {
 Config& LyricManager::ToConfig(Config& cfg) {
     cfg.lyricWindowOpacity = lyricWindowOpacity;
     cfg.showLyricsManagerGUI = showGUI;
+    cfg.useExternalLyrics = useExternalLyrics;
     cfg.WindowBorderSize = ImGui::GetStyle().WindowBorderSize;
     cfg.WindowRounding = ImGui::GetStyle().WindowRounding;
     return cfg;
@@ -33,15 +36,12 @@ float LyricManager::TimeElapsed() {
 
 /* Current line of lyrics being displayed. This only gets updated when the source is updated. */
 std::wstring& LyricManager::GetCurrentLyricLine() {
-    return line;
+    return internalLyricLine;
 }
 
-/* Copies audio file name into our own buffer, and extract PVID from it. */
+/* Copies audio file name into our own buffer */
 void LyricManager::SetSongAudio(const char* src) {
     songAudioName.assign(src);
-    // TODO: find procedures where PV id is assigned instead of this hack
-    std::string filename = FileNameFromPath(src);
-    sscanf_s(filename.c_str() + 1, "pv_%d.ogg", &pvID);
 }
 
 /* The audio being played by the Ryhthm Game / PV Session. */
@@ -56,7 +56,7 @@ void LyricManager::UpdateLyricIndex(int index) {
     if (index == 0)
     {
         lock.lock();
-        line.clear();
+        internalLyricLine.clear();
         lock.unlock();
     }
 }
@@ -65,7 +65,7 @@ void LyricManager::UpdateLyricIndex(int index) {
 void LyricManager::SetLyricLine(bool isLyric, char* src) {
     if (lyricUpdated && isLyric) {
         lock.lock();
-        line = u8string_to_wide_string(src);
+        internalLyricLine = u8string_to_wide_string(src);
         lock.unlock();
     }
     else if (!isLyric) {
@@ -76,7 +76,7 @@ void LyricManager::SetLyricLine(bool isLyric, char* src) {
 /* Updates the 'GameState' and decide the state of the lyrics. */
 void LyricManager::UpdateGameState(const char* state) {
     if (displayStatus == OnScreen && (strcmp(state, "PVsel") == 0)) {
-        line.clear();
+        internalLyricLine.clear();
         displayStatus = NoLyric;
         lyricDisplayStatus = Ended;
         lyricDisplayType = None;
@@ -84,7 +84,7 @@ void LyricManager::UpdateGameState(const char* state) {
         OnLyricsEnd();
     }
     else if (displayStatus != OnScreen && strcmp(state, "PV POST PROCESS TASK") == 0) {
-        line.clear();
+        internalLyricLine.clear();
         displayStatus = OnScreen;
         lyricDisplayType = PVMode;
         lyricDisplayStatus = Ready;
@@ -92,14 +92,39 @@ void LyricManager::UpdateGameState(const char* state) {
     }
 }
 
-/* Called when Ryhthm Game / PV Session starts. May be overridden.*/
+/* Called when Ryhthm Game / PV Session starts.*/
 void LyricManager::OnLyricsBegin() {
-    LOG(L"Started with audio %S.", songAudioName.c_str());
+    LOG(L"Started PV%d", *PVID);    
+    if (useExternalLyrics) {
+        // Attempt to load when there's nothing yet
+        wchar_t buffer[32] = { 0 };
+        swprintf_s(buffer, L"PV%3d", *PVID);
+        LOG(L"Attempting to load SubRip lyrics lyrics\\%s",buffer);
+        std::wstring filename = FullPathInDllFolder(L"lyrics\\" + std::wstring(buffer) + L".srt");
+        SubtitleParserFactory* subParserFactory = new SubtitleParserFactory(to_utf8(filename));
+        SubtitleParser* parser = subParserFactory->getParser();
+        LOG(L"Loading %s", filename.c_str());
+        if (parser->isLoaded) {
+            externalLyrics = parser->getSubtitles();
+            LOG(L"SubRip file loaded. Lines: %d", externalLyrics.size());
+            std::wstring buffer;
+            for (auto line : externalLyrics)
+                buffer += to_wstr(line->getText());
+            if (FontManager_Inst.UpdateCharset(buffer)) {
+                // Rebuild fonts if anything new is added
+                FontManager_Inst.reloadFonts = true;
+            }
+        }
+        else {
+            LOG(L"Failed to load SubRip (*.srt) file.");
+        }
+    }
 }
 
-/* Called when Ryhthm Game / PV Session ends. May be overridden.*/
+/* Called when Ryhthm Game / PV Session ends.*/
 void LyricManager::OnLyricsEnd() {
     LOG(L"Lyrics Ended.");
+    externalLyrics.clear();
 }
 
 /* Called by DX Hook's OnFrame. Do not override.*/
@@ -121,7 +146,7 @@ void LyricManager::OnImGUI() {
         ImGui::Text("Performance Metrics : %.1f FPS (%.3f ms)", ImGui::GetIO().Framerate , 1000.0f / ImGui::GetIO().Framerate);        
         ImGui::Separator();
         if (ShowLyric()) {
-            ImGui::Text("Now Playing [PV %d] [%s]", pvID, LanguageTypeStrings[(LanguageType)*Language]);
+            ImGui::Text("Now Playing [PV %d] [%s]", *PVID, LanguageTypeStrings[(LanguageType)*Language]);
             ImGui::PushFont(FontManager_Inst.font);
             ImGui::Text("%s", PVWaitScreenInfo->Name.c_str());
             ImGui::PopFont();
@@ -150,6 +175,10 @@ void LyricManager::OnImGUI() {
                 LyricDisplayTypeStrings[lyricDisplayType],
                 TimeElapsed()
             );
+            ImGui::Text(
+                "Loaded external lyrics lines:%d",
+                externalLyrics.size()
+            );
         }
         else {
             ImGui::Text("No Lyric Type:%s", LyricDisplayTypeStrings[lyricDisplayType]);
@@ -162,6 +191,8 @@ void LyricManager::OnImGUI() {
         ImGui::SliderFloat("WindowBorderSize", &style.WindowBorderSize, 0.0f, 1.0f, "%.0f");
         ImGui::Text("Rounding");
         ImGui::SliderFloat("WindowRounding", &style.WindowRounding, 0.0f, 12.0f, "%.0f");
+        ImGui::Separator();
+        ImGui::Checkbox("Attempt to load (and use) external SubRip Lyrics (applies on song start)", &useExternalLyrics);
         ImGui::Separator();
         ImGui::Text("Move Lyric Window");
         if (ImGui::Button("PV (Horizontally Centered)")) {
@@ -204,7 +235,7 @@ void LyricManager::OnImGUI() {
         "Lyric Overlay", NULL,
         (!ShowLyric() && showGUI) ? ImGuiWindowFlags_NoDecoration : (ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing)
     );
-    if (ShowLyric() && lyricIndex <= 0)
+    if (ShowLyric() && lyricIndex <= 0 &&!useExternalLyrics)
         return ImGui::End(); // Hide the window when we want to display lyrics but there's nothing to show
     ImGui::PushFont(FontManager_Inst.font);
     if (!ShowLyric() && showGUI) {
@@ -219,7 +250,13 @@ void LyricManager::OnImGUI() {
     }
     else {
         lock.lock();
-        ImGui::Text(to_utf8(GetCurrentLyricLine()).c_str());
+        if (useExternalLyrics && externalLyrics.size() > 0) {
+            auto subtitle = SubtitleItem::getByTimestamp(externalLyrics, (long)(*PVTimestamp * 1000));
+            if (subtitle) ImGui::Text(subtitle->getText().c_str());
+        }
+        else {
+            ImGui::Text(to_utf8(GetCurrentLyricLine()).c_str());
+        }
         lock.unlock();
     }
     ImGui::PopFont();

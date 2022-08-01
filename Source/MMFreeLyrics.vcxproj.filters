@@ -87,6 +87,9 @@
     <ClInclude Include="..\Dependencies\imgui\misc\cpp\imgui_stdlib.h">
       <Filter>Header Files\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="..\Dependencies\srtparser\srtparser.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

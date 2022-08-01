@@ -42,7 +42,7 @@ inline HWND window;
 #include <utils/helpers.h>
 #include <utils/sigscan.h>
 #include <utils/config.h>
-// Managers,Config & UI
+// Misc
 #define SHOW_WINDOW_SAVE_SELECTOR ImGui::Text("Configuration"); \
 ImGui::Text("Config for both windows (and their posistions) can be saved/loaded anytime via Ctrl+S/Ctrl+L."); \
 if (ImGui::Button("Save")) \
@@ -53,5 +53,3 @@ if (ImGui::Button("Load")) \
 #define SET_IMGUI_DEFAULT_FLAGS \
 	ImGui::GetIO().ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard; \
 	ImGui::GetIO().IniFilename = NULL;
-#include <managers/font_manager.h>
-#include <managers/lyric_manager.h>

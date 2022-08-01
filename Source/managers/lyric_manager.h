@@ -1,6 +1,7 @@
 #pragma once
 #include <globals.h>
-
+#include <managers/font_manager.h>
+#include <srtparser/srtparser.h>
 class LyricManager {
 
     enum DisplayStatus {
@@ -20,21 +21,23 @@ class LyricManager {
     };
 
 private:
-    std::wstring line;
+    std::wstring internalLyricLine;
     std::mutex lock;
     std::string songAudioName;
     std::string styleTestString;
 
-    int pvID = 0;
     int lyricIndex = 0;
     bool lyricUpdated = false;
+    std::vector<SubtitleItem*> externalLyrics;
 
     DisplayStatus displayStatus = NoLyric;
     LyricDisplayType lyricDisplayType = None;
     LyricDisplayStatus lyricDisplayStatus = Ended;
-
-    float lyricWindowOpacity = 0.0f;
     LyricDisplayType lyricSouldMoveType = None;
+
+    // Configurable 
+    bool useExternalLyrics;
+    float lyricWindowOpacity = 0.0f;
 
 public:
     bool showGUI = true;

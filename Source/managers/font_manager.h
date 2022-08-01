@@ -9,9 +9,9 @@ private:
     std::vector<std::string> fontsAvailable;
     std::string* fontnameDefault;
     std::string* fontnameWithCharset;
-    std::string charset;
-    bool reloadFonts = false;
-
+    std::map<wchar_t, int> charset;
+    
+    // Configurable
     float fontSize;
     float fontSizeImGui;
     bool isBold;
@@ -27,7 +27,8 @@ public:
     // Current combined font used for lyrics renderer
     ImFont* font;
     bool showGUI = true;
-
+    // Flag for triggering a font reload on next frame
+    bool reloadFonts = false;
     void Init(Config& cfg);
 
     Config& FromConfig(Config& cfg);
@@ -35,7 +36,8 @@ public:
 
     std::vector<std::string>& RefreshFontList();
 
-    void BuildCharset();
+    int UpdateCharset(char* charset_filename);
+    int UpdateCharset(std::wstring chars);
     void RebuildFonts();
     void OnFrame();
     void OnImGUI();

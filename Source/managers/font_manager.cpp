@@ -1,4 +1,5 @@
 #include <globals.h>
+#include <managers/font_manager.h>
 
 void FontManager::Init(Config& cfg) {
     RefreshFontList();
@@ -8,7 +9,8 @@ void FontManager::Init(Config& cfg) {
         // Assign default fonts by alphabetical order
     }
     FromConfig(cfg);
-    BuildCharset();
+    charset.clear();
+    UpdateCharset((char*)to_utf8(FullPathInDllFolder(DEFAULT_CHARSET_NAME)).c_str());
     RebuildFonts();
 }
 
@@ -52,12 +54,20 @@ Config& FontManager::ToConfig(Config& cfg) {
 }
 
 /* Build charset containing every character the renderer could ever display.
-- This is based on the charset.txt file provided. 
+- This will APPEND all unique characters of the string to the charset.
 - Normally it should contain the pv_db.txt from any lyrics mod you're using
 - Otherwise, it would use a fallback charset which would cover most Japanese characters & Romal characters
 */
-void FontManager::BuildCharset() {
-    std::ifstream f(to_utf8(FullPathInDllFolder(DEFAULT_CHARSET_NAME)));
+int FontManager::UpdateCharset(std::wstring chars) {
+    LOG(L"Enumerating unique characters...");
+    size_t size_before = charset.size();
+    for (auto& c : chars) charset[c] = 1;
+    LOG(L"%zd new unique characters (out of %zd) will be built into atlas.", charset.size() - size_before, chars.size());
+    return (int)(charset.size() - size_before);
+}
+
+int FontManager::UpdateCharset(char * charset_filename) {
+    std::ifstream f(charset_filename);
     if (!f.is_open()) {
         MessageBoxW(
             window,
@@ -65,17 +75,11 @@ void FontManager::BuildCharset() {
             MESSAGEBOX_TITLE,
             MB_ICONEXCLAMATION
         );
-        return;
-    }
-    LOG(L"Enumerating unique characters...");
+        return 0;
+    }  
     std::stringstream charbuf; charbuf << f.rdbuf();
     std::wstring chars = to_wstr(charbuf.str());
-    std::wstring charset_w;
-    std::map<wchar_t, int> table;
-    for (auto& c : chars) table[c] = 1;
-    for (auto& c : table) charset_w.push_back(c.first);
-    LOG(L"%zd unique characters (out of %zd) will be built into atlas.", charset_w.size(), chars.size());
-    charset = to_utf8(charset_w);
+    return UpdateCharset(chars);
 }
 
 /* Retrives all available fonts under the fonts\ directroy. Results are alphabetically sorted. */
@@ -97,7 +101,7 @@ std::vector<std::string>& FontManager::RefreshFontList() {
 - They get put on a texture here ONCE and would not change unless this function is called again.
 - which will update the fonts based on current settings.
 - TL;DR: If you made any change to the settings and want to see in on screen, this function MUST be called afterwards.
-- And do it outside ImGui's NewFrame() scope.
+- And do it outside ImGui's NewFrame() scope. In our instance just set `reloadFonts` to true
 -
 - NOTE : Do not use offical DearImGui repo to build since it does not contain some new features I introduced to
 -        this version of ImGui.
@@ -117,7 +121,6 @@ void FontManager::RebuildFonts() {
     config.StrokeColor = VEC4_TO_COL32(strokeColor);
     config.FillColor = VEC4_TO_COL32(fillColor);
     config.ShadowColor = VEC4_TO_COL32(shadowColor);
-
     LOG(L"Now rebuilding fonts atlas,please wait...");
     if (fontnameDefault) {
         io.Fonts->AddFontFromFileTTF(
@@ -136,8 +139,11 @@ void FontManager::RebuildFonts() {
     }
     ImVector<ImWchar> ranges;
     ImFontGlyphRangesBuilder builder;
-    if (charset.size() > 0)
-        builder.AddText(charset.c_str());
+    if (charset.size() > 0) {
+        std::wstring charset_buffer;
+        for (auto& c : charset) charset_buffer.push_back(c.first);
+        builder.AddText(to_utf8(charset_buffer).c_str());
+    }
     else {
         LOG(L"Using fallback charset (Japanese / Romal) since custom charset isn't loaded.");
         builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
@@ -210,7 +216,7 @@ void FontManager::OnImGUI() {
     ImGui::Separator();
     ImGui::Text("Font Size");
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "WARNING : Going for a large font size might crash the texture creation procedure!");
-    ImGui::SliderFloat("Font Size", &fontSize, 10, 80, "%.1f");
+    ImGui::SliderFloat("Font Size", &fontSize, 10, 100, "%.1f");
     ImGui::SliderFloat("ImGui Font Size", &fontSizeImGui, 10, 80, "%.1f");
     ImGui::SliderInt("Stroke Size", &strokeSize, 0, 10);
 

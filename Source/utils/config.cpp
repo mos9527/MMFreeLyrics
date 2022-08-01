@@ -21,6 +21,7 @@ void Config::LoadDefault() {
 
 	showFontManagerGUI = true;
 	showLyricsManagerGUI = true;
+	useExternalLyrics = true;
 }
 
 #pragma warning( disable : 4244 )
@@ -45,6 +46,7 @@ bool Config::Save() {
 	ASSIGN_TO_TABLE(ImGuiSettings);
 	ASSIGN_TO_TABLE(showFontManagerGUI);
 	ASSIGN_TO_TABLE(showLyricsManagerGUI);
+	ASSIGN_TO_TABLE(useExternalLyrics);
 
 	VEC2_TO_XY(shadowOffset);
 	ASSIGN_TO_TABLE(shadowOffsetX);
@@ -101,6 +103,7 @@ bool Config::Load() {
 			ImGuiSettings = freelyrics["ImGuiSettings"].as_string();
 			showFontManagerGUI = freelyrics["showFontManagerGUI"].as_boolean();
 			showLyricsManagerGUI = freelyrics["showLyricsManagerGUI"].as_boolean();
+			useExternalLyrics = freelyrics["useExternalLyrics"].as_boolean();
 
 			shadowOffset = ImVec2(
 				freelyrics["shadowOffsetX"].as_floating(),

@@ -1,4 +1,6 @@
 ﻿#include <globals.h>
+#include <managers/font_manager.h>
+#include <managers/lyric_manager.h>
 #pragma warning( disable : 26495 26812 )
 // Signatures
 SIG_SCAN
