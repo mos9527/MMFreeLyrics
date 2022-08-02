@@ -11,6 +11,7 @@ private:
     std::string* fontnameWithCharset;
     std::map<wchar_t, int> charset;
     
+public:
     // Configurable
     float fontSize;
     float fontSizeImGui;
@@ -22,8 +23,6 @@ private:
     ImVec2 shadowOffset;
 
     int strokeSize;
-
-public:
     // Current combined font used for lyrics renderer
     ImFont* font;
     bool showGUI = true;

@@ -78,9 +78,12 @@ HOOK(void**, __fastcall, _RenderLyricAndTitle, sigRenderLyricAndTitle(),
     void** a8)
 {
     bool isLyric = x == 172.0f;    
-    if (isLyric){        
-        // Disable game lyrics since we are rendering it ourselves
-        return NULL;
+    if (isLyric){                
+        if (LyricManager_Inst.showInternalLyrics) {
+            std::string lyricsBuffer = LyricManager_Inst.GetCurrentLyricLine();
+            return original_RenderLyricAndTitle(x, y, scale, a4, (char*)lyricsBuffer.c_str(), a6, a7, a8);
+        }
+        else return NULL; // Disable game lyrics
     } else {        
         LyricManager_Inst.SetLyricLine(false, NULL);
         void** result = original_RenderLyricAndTitle(x, y, scale, a4, text, a6, a7, a8);

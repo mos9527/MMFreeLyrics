@@ -25,6 +25,8 @@ public:
 	float lyricWindowOpacity;
 	bool showLyricsManagerGUI;
 	bool useExternalLyrics;
+	bool showInternalLyrics;
+	bool showLyrics;
 	// ImGui Styles
 	float WindowBorderSize;
 	float WindowRounding;	

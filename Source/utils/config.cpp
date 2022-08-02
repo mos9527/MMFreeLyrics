@@ -22,6 +22,8 @@ void Config::LoadDefault() {
 	showFontManagerGUI = true;
 	showLyricsManagerGUI = true;
 	useExternalLyrics = true;
+	showLyrics = true;
+	showInternalLyrics = false;
 }
 
 #pragma warning( disable : 4244 )
@@ -47,6 +49,8 @@ bool Config::Save() {
 	ASSIGN_TO_TABLE(showFontManagerGUI);
 	ASSIGN_TO_TABLE(showLyricsManagerGUI);
 	ASSIGN_TO_TABLE(useExternalLyrics);
+	ASSIGN_TO_TABLE(showInternalLyrics);
+	ASSIGN_TO_TABLE(showLyrics);
 
 	VEC2_TO_XY(shadowOffset);
 	ASSIGN_TO_TABLE(shadowOffsetX);
@@ -104,6 +108,8 @@ bool Config::Load() {
 			showFontManagerGUI = freelyrics["showFontManagerGUI"].as_boolean();
 			showLyricsManagerGUI = freelyrics["showLyricsManagerGUI"].as_boolean();
 			useExternalLyrics = freelyrics["useExternalLyrics"].as_boolean();
+			showInternalLyrics = freelyrics["showInternalLyrics"].as_boolean();
+			showLyrics = freelyrics["showLyrics"].as_boolean();
 
 			shadowOffset = ImVec2(
 				freelyrics["shadowOffsetX"].as_floating(),

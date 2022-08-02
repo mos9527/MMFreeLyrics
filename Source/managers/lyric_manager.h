@@ -21,7 +21,7 @@ class LyricManager {
     };
 
 private:
-    std::wstring internalLyricLine;
+    std::string internalLyricLine;
     std::mutex lock;
     std::string songAudioName;
     std::string styleTestString;
@@ -34,13 +34,15 @@ private:
     LyricDisplayStatus lyricDisplayStatus = Ended;
     LyricDisplayType lyricSouldMoveType = None;
 
+public:
     // Configurable 
     bool useExternalLyrics;
     float lyricWindowOpacity = 0.0f;
+    bool showInternalLyrics;
+    bool showLyrics;
 
-public:
     bool showGUI = true;
-    bool ShowLyric();
+    bool shouldShowLyrics();
 
     void Init(Config& cfg);
 
@@ -48,8 +50,8 @@ public:
     Config& ToConfig(Config& cfg);
 
     float TimeElapsed();
-    std::wstring& GetCurrentLyricLine();
-    std::string& GetSongAudio();
+    std::string GetCurrentLyricLine();
+    std::string GetSongAudio();
 
     void UpdateLyricIndex(int index);
     void UpdateGameState(const char* state);
