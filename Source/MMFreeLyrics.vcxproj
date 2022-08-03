@@ -198,6 +198,9 @@
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>..\Dependencies\detours\lib\detours.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)..\config.toml" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -224,7 +227,8 @@
     </Link>
     <PostBuildEvent>
       <Command>del "$(OutputPath)*.exp"
-del "$(OutputPath)*.lib"</Command>
+del "$(OutputPath)*.lib"
+copy "$(SolutionDir)..\config.toml" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">

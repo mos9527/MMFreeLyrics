@@ -2,8 +2,11 @@
 #include <managers/lyric_manager.h>
 
 void LyricManager::Init(Config& cfg) {
-    styleTestString.assign(LYRIC_PLACEHOLDER_MESSAGE);
-    FromConfig(cfg);
+    if (!isInit) {
+        styleTestString.assign(LYRIC_PLACEHOLDER_MESSAGE);
+        FromConfig(cfg);
+        isInit = true;
+    }
 }
 
 Config& LyricManager::FromConfig(Config& cfg) {

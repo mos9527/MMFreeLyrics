@@ -35,6 +35,7 @@ private:
     LyricDisplayType lyricSouldMoveType = None;
 
 public:
+    bool isInit = false;
     // Configurable 
     bool useExternalLyrics;
     float lyricWindowOpacity = 0.0f;

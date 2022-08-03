@@ -199,12 +199,13 @@ extern "C"
         window = m_ChainDesc.OutputWindow;
         originalWndProc = (WNDPROC)SetWindowLongPtrA(window, GWLP_WNDPROC, (LONG_PTR)WndProc);
         
+        ImGui_ImplWin32_Init(window);
+        ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
+
         Config::LoadGlobalConfig();
         LyricManager_Inst.Init(GlobalConfig_Inst);
         FontManager_Inst.Init(GlobalConfig_Inst);
-
-        ImGui_ImplWin32_Init(window);
-        ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
+        LOG(L"Initialization complete");
     }
     void __declspec(dllexport) Init() {
 		INSTALL_HOOK(_ChangeGameState);

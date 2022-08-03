@@ -2,16 +2,19 @@
 #include <managers/font_manager.h>
 
 void FontManager::Init(Config& cfg) {
-    RefreshFontList();
-    if (fontsAvailable.size() > 0) {
-        fontnameWithCharset = &fontsAvailable[0];
-        fontnameDefault = &fontsAvailable[fontsAvailable.size() - 1];
-        // Assign default fonts by alphabetical order
+    if (!isInit) {
+        RefreshFontList();
+        if (fontsAvailable.size() > 0) {
+            fontnameWithCharset = &fontsAvailable[0];
+            fontnameDefault = &fontsAvailable[fontsAvailable.size() - 1];
+            // Assign default fonts by alphabetical order
+        }
+        FromConfig(cfg);
+        charset.clear();
+        UpdateCharset((char*)to_utf8(FullPathInDllFolder(DEFAULT_CHARSET_NAME)).c_str());
+        RebuildFonts();
+        isInit = true;
     }
-    FromConfig(cfg);
-    charset.clear();
-    UpdateCharset((char*)to_utf8(FullPathInDllFolder(DEFAULT_CHARSET_NAME)).c_str());
-    RebuildFonts();
 }
 
 Config& FontManager::FromConfig(Config& cfg) {

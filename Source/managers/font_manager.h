@@ -12,6 +12,7 @@ private:
     std::map<wchar_t, int> charset;
     
 public:
+    bool isInit = false;
     // Configurable
     float fontSize;
     float fontSizeImGui;
