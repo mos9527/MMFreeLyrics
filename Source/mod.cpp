@@ -201,11 +201,6 @@ extern "C"
         
         ImGui_ImplWin32_Init(window);
         ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
-
-        Config::LoadGlobalConfig();
-        LyricManager_Inst.Init(GlobalConfig_Inst);
-        FontManager_Inst.Init(GlobalConfig_Inst);
-        LOG(L"Initialization complete");
     }
     void __declspec(dllexport) Init() {
 		INSTALL_HOOK(_ChangeGameState);
@@ -219,6 +214,14 @@ extern "C"
         LOG(L"Hooks installed.");           
     }
     void __declspec(dllexport) OnFrame(IDXGISwapChain* m_pSwapChain) {
+        if (!LyricManager_Inst.isInit && !FontManager_Inst.isInit) {
+            LOG(L"Initializing...");
+            Config::LoadGlobalConfig();
+            LyricManager_Inst.Init(GlobalConfig_Inst);
+            FontManager_Inst.Init(GlobalConfig_Inst);
+            LOG(L"Initialization complete.");
+        }
+
         LyricManager_Inst.OnFrame();
         FontManager_Inst.OnFrame();
 
