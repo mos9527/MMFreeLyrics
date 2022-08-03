@@ -71,7 +71,7 @@ int FontManager::UpdateCharset(char * charset_filename) {
     if (!f.is_open()) {
         MessageBoxW(
             window,
-            CHARSET_NOTFOUND_WARNING_CONTENT,
+            CHARSET_NOTFOUND_WARNING,
             MESSAGEBOX_TITLE,
             MB_ICONEXCLAMATION
         );
@@ -85,14 +85,24 @@ int FontManager::UpdateCharset(char * charset_filename) {
 /* Retrives all available fonts under the fonts\ directroy. Results are alphabetically sorted. */
 std::vector<std::string>& FontManager::RefreshFontList() {
     fontsAvailable.clear();
-    for (auto file : std::filesystem::directory_iterator(to_utf8(FullPathInDllFolder(L"fonts\\")))) {
-        std::wstring path = file.path();
-        std::wstring ext = path.substr(path.length() - 3);
-        if (ext == L"ttf" || ext == L"otf") {
-            fontsAvailable.push_back(to_utf8(path));
-        }
+    try {
+        for (auto file : std::filesystem::directory_iterator(to_utf8(FullPathInDllFolder(L"fonts\\")))) {
+            std::wstring path = file.path();
+            std::wstring ext = path.substr(path.length() - 3);
+            if (ext == L"ttf" || ext == L"otf") {
+                fontsAvailable.push_back(to_utf8(path));
+            }
+    }   
+        std::sort(fontsAvailable.begin(), fontsAvailable.end());
     }
-    std::sort(fontsAvailable.begin(), fontsAvailable.end());
+    catch (std::filesystem::filesystem_error e){
+        MessageBoxW(
+            window,
+            FONTS_FOLDER_NOT_FOUND,
+            MESSAGEBOX_TITLE,
+            MB_ICONEXCLAMATION
+        );
+    }
     return fontsAvailable;
 }
 
@@ -186,34 +196,39 @@ void FontManager::OnImGUI() {
     ImGui::Text("Note : The settings here don't reflect automatically. You need to apply it first.");
     ImGui::Text("Current charset size (Custom): %d", charset.size());
     ImGui::Text("Fonts");
-    if (ImGui::BeginCombo("Default (w/ Romal & Japanese charset)", FileNameFromPath(*fontnameDefault).c_str() + 1)) {
-        for (int i = 0; i < fontsAvailable.size(); i++) {
-            std::string* font = &fontsAvailable[i];
-            const bool isSelected = (font == fontnameDefault);
-            if (ImGui::Selectable(FileNameFromPath(*font).c_str(), isSelected)) {
-                fontnameDefault = font;
+    if (fontsAvailable.size() > 0) {
+        if (ImGui::BeginCombo("Default (w/ Romal & Japanese charset)", FileNameFromPath(*fontnameDefault).c_str() + 1)) {
+            for (int i = 0; i < fontsAvailable.size(); i++) {
+                std::string* font = &fontsAvailable[i];
+                const bool isSelected = (font == fontnameDefault);
+                if (ImGui::Selectable(FileNameFromPath(*font).c_str(), isSelected)) {
+                    fontnameDefault = font;
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();
+                }
             }
-            if (isSelected) {
-                ImGui::SetItemDefaultFocus();
-            }
+            ImGui::EndCombo();
         }
-        ImGui::EndCombo();
-    }
 
-    if (ImGui::BeginCombo("Fallback (w/ Custom Charset)", FileNameFromPath(*fontnameWithCharset).c_str() + 1)) {
-        for (int i = 0; i < fontsAvailable.size(); i++) {
-            std::string* font = &fontsAvailable[i];
-            const bool isSelected = (font == fontnameWithCharset);
-            if (ImGui::Selectable(FileNameFromPath(*font).c_str(), isSelected)) {
-                fontnameWithCharset = font;
+        if (ImGui::BeginCombo("Fallback (w/ Custom Charset)", FileNameFromPath(*fontnameWithCharset).c_str() + 1)) {
+            for (int i = 0; i < fontsAvailable.size(); i++) {
+                std::string* font = &fontsAvailable[i];
+                const bool isSelected = (font == fontnameWithCharset);
+                if (ImGui::Selectable(FileNameFromPath(*font).c_str(), isSelected)) {
+                    fontnameWithCharset = font;
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();
+                }
             }
-            if (isSelected) {
-                ImGui::SetItemDefaultFocus();
-            }
+            ImGui::EndCombo();
         }
-        ImGui::EndCombo();
+        ImGui::Separator();
     }
-    ImGui::Separator();
+    else {
+        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "WARNING : No fonts available!");
+    }
     ImGui::Text("Font Size");
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "WARNING : Going for a large font size might crash the texture creation procedure!");
     ImGui::SliderFloat("Font Size", &fontSize, 10, 100, "%.1f");

@@ -7,8 +7,8 @@ class FontManager {
 
 private:
     std::vector<std::string> fontsAvailable;
-    std::string* fontnameDefault;
-    std::string* fontnameWithCharset;
+    std::string* fontnameDefault = NULL;
+    std::string* fontnameWithCharset = NULL;
     std::map<wchar_t, int> charset;
     
 public:
