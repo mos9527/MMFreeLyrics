@@ -31,6 +31,7 @@ const HMODULE MODULE_HANDLE = GetModuleHandle(nullptr);
 
 #define INSTALL_HOOK(functionName) \
 	{ \
+		LOG(L"Installing hook %S",#functionName); \
 		DetourTransactionBegin(); \
 		DetourUpdateThread(GetCurrentThread()); \
 		DetourAttach((void**)&original##functionName, implOf##functionName); \
