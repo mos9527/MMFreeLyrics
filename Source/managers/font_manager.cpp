@@ -11,7 +11,7 @@ void FontManager::Init(Config& cfg) {
         }
         FromConfig(cfg);
         charset.clear();
-        UpdateCharset((char*)to_utf8(FullPathInDllFolder(DEFAULT_CHARSET_NAME)).c_str());
+        UpdateCharset(to_utf8(FullPathInDllFolder(DEFAULT_CHARSET_NAME)).c_str());
         RebuildFonts();
         isInit = true;
     }
@@ -69,7 +69,7 @@ int FontManager::UpdateCharset(std::wstring chars) {
     return (int)(charset.size() - size_before);
 }
 
-int FontManager::UpdateCharset(char * charset_filename) {
+int FontManager::UpdateCharset(const char * charset_filename) {
     std::ifstream f(charset_filename);
     if (!f.is_open()) {
         MessageBoxW(
@@ -180,6 +180,7 @@ void FontManager::OnFrame() {
     if (reloadFonts) {
         // ImGUI Dx11 Implmentation doesn't reload font textures automatically
         // Force it to do so by recreating the context
+        ImGui_ImplDX11_Shutdown();
         ImGui::DestroyContext(ImGui::GetCurrentContext());
         ImGui::CreateContext();
         SET_IMGUI_DEFAULT_FLAGS;

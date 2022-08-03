@@ -66,28 +66,25 @@ HOOK(INT64, __fastcall, _ChangeGameState, sigChangeGameState(), INT64* a, const 
     LyricManager_Inst.UpdateGameState(state);
 	return result;
 }
-
+std::string lyricsBuffer;
 HOOK(void**, __fastcall, _RenderLyricAndTitle, sigRenderLyricAndTitle(),
     float x,
     float y,
     unsigned int scale,
     int a4,
-    char* text,
+    const char* text,
     char a6,
     unsigned int a7,
     void** a8)
 {
     bool isLyric = x == 172.0f;    
-    if (isLyric){                
-        if (LyricManager_Inst.showInternalLyrics) {
-            std::string lyricsBuffer = LyricManager_Inst.GetCurrentLyricLine();
-            return original_RenderLyricAndTitle(x, y, scale, a4, (char*)lyricsBuffer.c_str(), a6, a7, a8);
-        }
-        else return NULL; // Disable game lyrics
-    } else {        
+    if (isLyric){
+        lyricsBuffer = LyricManager_Inst.showInternalLyrics ? LyricManager_Inst.GetCurrentLyricLine() : ""; 
+        // Maintain a local copy in case the return value gets destoryed
+        return original_RenderLyricAndTitle(x, y, scale, a4, lyricsBuffer.c_str(), a6, a7, a8);
+    } else {
         LyricManager_Inst.SetLyricLine(false, NULL);
-        void** result = original_RenderLyricAndTitle(x, y, scale, a4, text, a6, a7, a8);
-        return result;
+        return original_RenderLyricAndTitle(x, y, scale, a4, text, a6, a7, a8);;
     }
 }
 
@@ -107,9 +104,9 @@ HOOK(DivaInputState*, __fastcall, _GetInputState, sigGetInputState(), int player
         memset(result, 0, sizeof(DivaInputState));
     return result;
 }
-HOOK(char, __fastcall, _CopyCharsByCount, sigCopyCharsByCount(), char* out, char* in, int length) {
-    if (length == 0x4C) {
-        // Magic number! 78 chars max, huh?
+HOOK(char, __fastcall, _CopyCharsByCount, sigCopyCharsByCount(), const char* out,const char* in, int length) {
+    if (length == 0x4C && LyricManager_Inst.shouldShowLyrics()) {
+        // Magic number! 78 chars is only used during lyrics rendering
         LyricManager_Inst.SetLyricLine(true, in);
     }
     return original_CopyCharsByCount(out, in, length);    

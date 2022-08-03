@@ -36,7 +36,7 @@ public:
 
     std::vector<std::string>& RefreshFontList();
 
-    int UpdateCharset(char* charset_filename);
+    int UpdateCharset(const char* charset_filename);
     int UpdateCharset(std::wstring chars);
     void RebuildFonts();
     void OnFrame();

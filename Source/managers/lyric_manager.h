@@ -52,11 +52,10 @@ public:
 
     float TimeElapsed();
     std::string GetCurrentLyricLine();
-    std::string GetSongAudio();
 
     void UpdateLyricIndex(int index);
     void UpdateGameState(const char* state);
-    void SetLyricLine(bool isLyric, char* src);
+    void SetLyricLine(bool isLyric, const char* src);
     void SetSongAudio(const char* src);
 
     void OnLyricsBegin();

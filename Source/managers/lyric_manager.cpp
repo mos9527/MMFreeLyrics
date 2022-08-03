@@ -55,12 +55,7 @@ std::string LyricManager::GetCurrentLyricLine() {
 
 /* Copies audio file name into our own buffer */
 void LyricManager::SetSongAudio(const char* src) {
-    songAudioName.assign(src);
-}
-
-/* The audio being played by the Ryhthm Game / PV Session. */
-std::string LyricManager::GetSongAudio() {
-    return songAudioName;
+    if (src) songAudioName.assign(src);
 }
 
 /* Set current index of lyric and flag for line updates. */
@@ -75,8 +70,8 @@ void LyricManager::UpdateLyricIndex(int index) {
 }
 
 /* Set current lyric line with a lock. */
-void LyricManager::SetLyricLine(bool isLyric, char* src) {
-    if (isLyric) {
+void LyricManager::SetLyricLine(bool isLyric, const char* src) {
+    if (isLyric && src) {
         lock.lock();        
         internalLyricLine = src;
         lock.unlock();
@@ -88,20 +83,22 @@ void LyricManager::SetLyricLine(bool isLyric, char* src) {
 
 /* Updates the 'GameState' and decide the state of the lyrics. */
 void LyricManager::UpdateGameState(const char* state) {
-    if (displayStatus == OnScreen && (strcmp(state, "PVsel") == 0)) {
-        internalLyricLine.clear();
-        displayStatus = NoLyric;
-        lyricDisplayStatus = Ended;
-        lyricDisplayType = None;
-        lyricIndex = 0;
-        OnLyricsEnd();
-    }
-    else if (displayStatus != OnScreen && strcmp(state, "PV POST PROCESS TASK") == 0) {
-        internalLyricLine.clear();
-        displayStatus = OnScreen;
-        lyricDisplayType = PVMode;
-        lyricDisplayStatus = Ready;
-        OnLyricsBegin();
+    if (state) {
+        if (displayStatus == OnScreen && (strcmp(state, "PVsel") == 0)) {
+            internalLyricLine.clear();
+            displayStatus = NoLyric;
+            lyricDisplayStatus = Ended;
+            lyricDisplayType = None;
+            lyricIndex = 0;
+            OnLyricsEnd();
+        }
+        else if (displayStatus != OnScreen && strcmp(state, "PV POST PROCESS TASK") == 0) {
+            internalLyricLine.clear();
+            displayStatus = OnScreen;
+            lyricDisplayType = PVMode;
+            lyricDisplayStatus = Ready;
+            OnLyricsBegin();
+        }
     }
 }
 
@@ -178,7 +175,7 @@ void LyricManager::OnImGUI() {
             ImGui::Separator();
             ImGui::Text(
                 "Audio %s",
-                GetSongAudio().c_str()
+                songAudioName.c_str()
             );
             ImGui::Text(
                 "Status:%s LyricId:%d Event:%d Type:%s Time:%.2f s",
