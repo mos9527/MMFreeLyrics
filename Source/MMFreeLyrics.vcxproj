@@ -227,8 +227,7 @@
     </Link>
     <PostBuildEvent>
       <Command>del "$(OutputPath)*.exp"
-del "$(OutputPath)*.lib"
-copy "$(SolutionDir)..\config.toml" "$(OutDir)"</Command>
+del "$(OutputPath)*.lib"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Build Mod Archive|x64'">
@@ -255,7 +254,7 @@ copy "$(SolutionDir)..\config.toml" "$(OutDir)"</Command>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>7z a "$(SolutionDir)..\MMFreeLyrics.zip" "$(OutputPath)*.dll" "$(SolutionDir)..\config.toml" "$(SolutionDir)..\README.md"</Command>
+      <Command>7z a "$(SolutionDir)..\MMFreeLyrics.zip" "$(OutputPath)*.dll" "$(SolutionDir)..\config.toml" "$(SolutionDir)..\Misc\charset\charset.txt" "$(SolutionDir)..\README.md"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -337,7 +336,11 @@ copy "$(SolutionDir)..\config.toml" "$(OutDir)"</Command>
     <None Include="..\.gitignore" />
     <None Include="..\.gitmodules" />
     <None Include="..\config.toml" />
+    <None Include="..\Misc\charset\make.py" />
     <None Include="..\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Misc\charset\charset.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

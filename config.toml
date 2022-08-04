@@ -15,7 +15,7 @@ MegaMix+ 第三方 FreeType 字幕渲染模块
 =======================
 mos9527,2022\
 """
-version = "0.0.9b"
+version = "0.1.0b"
 dll = [
 "MMFreeLyrics.dll",
 ]

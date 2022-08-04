@@ -148,5 +148,13 @@
     <None Include="..\.gitignore">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\Misc\charset\make.py">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Misc\charset\charset.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

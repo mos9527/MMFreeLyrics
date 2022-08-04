@@ -27,7 +27,7 @@
     - 可参考 [初音未来 Project DIVA MEGA39’s＋帧数解锁和歌曲汉化MOD安装流程](https://www.bilibili.com/read/cv16871246)，并在游戏根目录下的 `config.toml` 中 `priority` 项添加 `MMFreeLyrics`
 - 在 [Release](https://github.com/mos9527/MMFreeLyrics/releases) 下载本 MOD
 - 解压至游戏文件夹 `mods\MMFreeLyrics` 目录
-- 配置见 MOD 使用
+- 配置见 *MOD 使用*
 - 正确配置的模组目录应有如下结构
     
         HATSUNE MIKU PROJECT DIVA MEGA MIX PLUS\MODS\MMFREELYRICS
@@ -53,10 +53,9 @@
 
 ## MOD 使用
 ### 歌词 MOD 兼容性
-- 如果还使用了歌词翻译 MOD
-    - 将翻译模组文件夹内的 `pv_db.txt` 复制于本模组目录
-    - 更名为 `charset.txt`
-    - 否则中文子集等可能无法正常显示
+- 如果还使用了歌词翻译 MOD 且遇到缺字问题：
+    - 将翻译模组文件夹内的 `pv_db.txt` 内容复制于本模组目录下 `charset.txt` 内
+    - 如果可能，请将该 `pv_db.txt` 提交 Issues
 ### 字体安装
 - 在模组目录中创建文件夹 `fonts`，将自己想用的字体文件(`.ttf`,`.otf`) 放入其中
     - 注：文件名最好使用英文。中文名称能够被使用，但字体名不会被正常显示。
