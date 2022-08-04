@@ -51,6 +51,12 @@ bool Config::Save() {
 	ASSIGN_TO_TABLE(useExternalLyrics);
 	ASSIGN_TO_TABLE(showInternalLyrics);
 	ASSIGN_TO_TABLE(showLyrics);
+	ASSIGN_TO_TABLE(lyricDockingStyle);
+	ASSIGN_TO_TABLE(lyricPivotStyle);
+
+	VEC2_TO_XY(lyricPivotOffset);
+	ASSIGN_TO_TABLE(lyricPivotOffsetX);
+	ASSIGN_TO_TABLE(lyricPivotOffsetY);
 
 	VEC2_TO_XY(shadowOffset);
 	ASSIGN_TO_TABLE(shadowOffsetX);
@@ -110,6 +116,13 @@ bool Config::Load() {
 			useExternalLyrics = freelyrics["useExternalLyrics"].as_boolean();
 			showInternalLyrics = freelyrics["showInternalLyrics"].as_boolean();
 			showLyrics = freelyrics["showLyrics"].as_boolean();
+			lyricDockingStyle = freelyrics["lyricDockingStyle"].as_integer();
+			lyricPivotStyle = freelyrics["lyricPivotStyle"].as_integer();
+			
+			lyricPivotOffset = ImVec2(
+				freelyrics["lyricPivotOffsetX"].as_floating(),
+				freelyrics["lyricPivotOffsetY"].as_floating()
+			);
 
 			shadowOffset = ImVec2(
 				freelyrics["shadowOffsetX"].as_floating(),

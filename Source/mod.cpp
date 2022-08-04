@@ -107,6 +107,7 @@ HOOK(void*, __fastcall, _GetInputState, sigGetInputState(), int player) {
     }
     return result;
 }
+
 HOOK(char, __fastcall, _CopyCharsByCount, sigCopyCharsByCount(), const char* out,const char* in, int length) {
     if (length == 0x4C && LyricManager_Inst.shouldShowLyrics()) {
         // Magic number! 78 chars is only used during lyrics rendering

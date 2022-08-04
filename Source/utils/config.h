@@ -27,6 +27,9 @@ public:
 	bool useExternalLyrics;
 	bool showInternalLyrics;
 	bool showLyrics;
+	int lyricDockingStyle;
+	int lyricPivotStyle;
+	ImVec2 lyricPivotOffset;
 	// ImGui Styles
 	float WindowBorderSize;
 	float WindowRounding;	

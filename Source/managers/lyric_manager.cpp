@@ -1,5 +1,18 @@
 #include <globals.h>
 #include <managers/lyric_manager.h>
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui/imgui_internal.h>
+
+bool ImGui_CursorButton(const char * ID,ImGuiMouseCursor cursor,bool flipX = false,bool flipY = false) {
+    ImVec2 offset, size;
+    ImVec2 out_uv_border[2]; // TODO : Render borders as well
+    ImVec2 out_uv_fill[2];    
+    ImTextureID texId = ImGui::GetIO().Fonts->TexID;
+    ImGui::GetIO().Fonts->GetMouseCursorTexData(cursor, &offset, &size, out_uv_border, out_uv_fill);    
+    if (flipX) std::swap(out_uv_border[0].x, out_uv_border[1].x);
+    if (flipY) std::swap(out_uv_border[0].y, out_uv_border[1].y);
+    return ImGui::ImageButton(ID,texId, size, out_uv_border[0], out_uv_border[1]);
+}
 
 void LyricManager::Init(Config& cfg) {
     if (!isInit) {
@@ -15,6 +28,9 @@ Config& LyricManager::FromConfig(Config& cfg) {
     useExternalLyrics = cfg.useExternalLyrics;
     showInternalLyrics = cfg.showInternalLyrics;
     showLyrics = cfg.showLyrics;
+    lyricDockingStyle = (LyricDockingStyle)cfg.lyricDockingStyle;
+    lyricPivotStyle = (LyricPivotStyle)cfg.lyricPivotStyle;
+    lyricPivotOffset = cfg.lyricPivotOffset;
     ImGui::GetStyle().WindowBorderSize = cfg.WindowBorderSize;
     ImGui::GetStyle().WindowRounding = cfg.WindowRounding;
     return cfg;
@@ -26,6 +42,9 @@ Config& LyricManager::ToConfig(Config& cfg) {
     cfg.useExternalLyrics = useExternalLyrics;
     cfg.showInternalLyrics = showInternalLyrics;
     cfg.showLyrics = showLyrics;
+    cfg.lyricDockingStyle = lyricDockingStyle;
+    cfg.lyricPivotStyle = lyricPivotStyle;
+    cfg.lyricPivotOffset = lyricPivotOffset;
     cfg.WindowBorderSize = ImGui::GetStyle().WindowBorderSize;
     cfg.WindowRounding = ImGui::GetStyle().WindowRounding;
     return cfg;
@@ -126,7 +145,7 @@ void LyricManager::OnLyricsBegin() {
             }
         }
         else {
-            LOG(L"Failed to load SubRip (*.srt) file.");
+           LOG(L"Failed to load SubRip (*.srt) file.");
         }
     }
 }
@@ -207,44 +226,41 @@ void LyricManager::OnImGUI() {
         ImGui::SameLine();
         ImGui::Checkbox("Show lyrics",&showLyrics);
         ImGui::Separator();
-        ImGui::Text("Move Lyric Window");
-        if (ImGui::Button("PV (Horizontally Centered)")) {
-            lyricSouldMoveType = PVMode;
+
+        ImGui::Text("Docking (Automatic Aligment)");
+        if (ImGui::Button("Free")) {
+            lyricDockingStyle = Free;
+            lyricPivotStyle = NotSet;
         }
         ImGui::SameLine();
-        if (ImGui::Button("Ryhthm Game")) {
-            lyricSouldMoveType = RyhthmGame;
-        }
+        if (ImGui::Button("H. Center")) 
+            lyricDockingStyle |= HorizontallyCentered;
         ImGui::SameLine();
-        if (ImGui::Button("Current")) {
-            lyricSouldMoveType = lyricDisplayType;
-        }
+        if (ImGui::Button("V. Center")) 
+            lyricDockingStyle |= VerticallyCentered; 
         ImGui::Separator();
+        if (lyricDockingStyle == Free) {
+            ImGui::Text("Pivioting");
+            int prev = lyricPivotStyle;
+            ImGui::Separator();
+            if (ImGui_CursorButton("Top Left",ImGuiMouseCursor_ResizeNESW, true, false))
+                lyricPivotStyle = TopLeft;
+            ImGui::SameLine();
+            if (ImGui_CursorButton("Top Right",ImGuiMouseCursor_ResizeNESW, false, false))
+                lyricPivotStyle = TopRight;
+            if (ImGui_CursorButton("Bottom Left",ImGuiMouseCursor_ResizeNESW, true, true))
+                lyricPivotStyle = BottomLeft;
+            ImGui::SameLine();
+            if (ImGui_CursorButton("Bottom Right",ImGuiMouseCursor_ResizeNESW, false, true))
+                lyricPivotStyle = BottomRight;
+            if (prev != lyricPivotStyle) lyricPivotOffset = ImVec2();
+            ImGui::Separator();
+        }
         SHOW_WINDOW_SAVE_SELECTOR;
         ImGui::End();
     }
     if (showLyrics) {
         ImGui::SetNextWindowBgAlpha(lyricWindowOpacity);
-        if (lyricSouldMoveType != None) {
-            const ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImVec2 window_pos, window_pos_pivot;
-            if (lyricSouldMoveType == PVMode) {
-                window_pos = viewport->GetWorkCenter();
-                window_pos.y = viewport->WorkSize.y * 0.85f;
-                window_pos_pivot = ImVec2(0.5f, 0.5f);
-                ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-                if (lyricDisplayType == PVMode) lyricSouldMoveType = PVMode;
-                // Keep in horizontal center in PVMode
-            }
-            else if (lyricSouldMoveType == RyhthmGame) {
-                window_pos = viewport->GetWorkCenter();
-                window_pos.x = viewport->WorkSize.x * 0.07f;
-                window_pos.y = viewport->WorkSize.y * 0.91f;
-                window_pos_pivot = ImVec2(0.0f, 0.5f);
-                ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-                lyricSouldMoveType = None;
-            }
-        }
         ImGui::Begin(
             "Lyric Overlay", NULL,
             (!shouldShowLyrics() && showGUI) ? ImGuiWindowFlags_NoDecoration : (ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing)
@@ -254,13 +270,16 @@ void LyricManager::OnImGUI() {
         ImGui::PushFont(FontManager_Inst.font);
         if (!shouldShowLyrics() && showGUI) {
             // Allow the user to edit the text for style testing
-            ImVec2 size = ImGui::CalcTextSize(styleTestString.c_str());
-            size.x *= 2;
-            size.y *= 2; // TODO : Correct windows size
-            ImGui::SetWindowSize(size, ImGuiCond_Always);
+            ImVec2 size = ImGui::CalcTextSize(styleTestString.c_str()) + ImVec2(20,25);            
+            ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(0, 0));
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0,0));
+            ImGui::SetWindowSize(size, ImGuiCond_Always);            
             ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 0, 0, 0));
+            ImGui::PushItemWidth(size.x);            
             ImGui::InputText("###", &styleTestString, 1024);
-            ImGui::PopStyleColor();
+            ImGui::PopItemWidth();
+            ImGui::PopStyleColor();            
+            ImGui::PopStyleVar(2);
         }
         else {
             lock.lock();            
@@ -268,6 +287,54 @@ void LyricManager::OnImGUI() {
             lock.unlock();
         }
         ImGui::PopFont();
+        auto viewport = ImGui::GetMainViewport();
+        auto window = ImGui::GetCurrentWindow();
+        // Docking Mode
+        // The movement axies are restrained to some degree by the docking settings
+        if (lyricDockingStyle != Free) {
+            window->SetWindowPosPivot = ImVec2(
+                0.5f * (lyricDockingStyle & HorizontallyCentered),
+                0.5f * (lyricDockingStyle & VerticallyCentered)
+            );
+
+            if (lyricDockingStyle & HorizontallyCentered)
+                window->SetWindowPosVal.x = viewport->Size.x / 2;
+            else
+                window->SetWindowPosVal.x = window->Pos.x;
+            if (lyricDockingStyle & VerticallyCentered)
+                window->SetWindowPosVal.y = viewport->Size.y / 2;
+            else
+                window->SetWindowPosVal.y = window->Pos.y;
+        } else {
+            // Pivoting Mode
+            // The lyrics window can be moved freely while being relative to a pivot (of itself)
+            ImVec2 pivot;
+            switch (lyricPivotStyle) {
+                case TopLeft:
+                    pivot.x = 0; break;
+                case TopRight:
+                    pivot.x = 1; break;
+                case BottomLeft:
+                    pivot.y = 1; break;
+                case BottomRight:
+                    pivot.x = 1; 
+                    pivot.y = 1; break;
+            }
+            if (lyricPivotStyle != NotSet) {
+                ImGuiContext& g = *GImGui;
+                if (g.MovingWindow == window) {
+                    lyricWasMoved = true;
+                } else {
+                    if (lyricWasMoved) {
+                        lyricPivotOffset += window->Pos - lyricPosBeforeMove;
+                        lyricWasMoved = false;
+                    }
+                    else lyricPosBeforeMove = window->Pos;
+                    window->SetWindowPosPivot = pivot;
+                    window->SetWindowPosVal = viewport->Size * pivot + lyricPivotOffset;
+                }
+            }
+        }
         ImGui::End();
     }
 }

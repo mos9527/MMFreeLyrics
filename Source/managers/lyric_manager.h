@@ -19,7 +19,18 @@ class LyricManager {
         Paused,
         Ready
     };
-
+    enum LyricDockingStyle {
+        Free = 0b0000,
+        HorizontallyCentered = 0b0001,
+        VerticallyCentered = 0b0010,
+    };
+    enum LyricPivotStyle {        
+        NotSet,
+        TopLeft,
+        TopRight,
+        BottomLeft,
+        BottomRight
+    };
 private:
     std::string internalLyricLine;
     std::mutex lock;
@@ -32,11 +43,17 @@ private:
     DisplayStatus displayStatus = NoLyric;
     LyricDisplayType lyricDisplayType = None;
     LyricDisplayStatus lyricDisplayStatus = Ended;
-    LyricDisplayType lyricSouldMoveType = None;
 
+    bool lyricWasMoved = false;
+    ImVec2 lyricPosBeforeMove;
 public:
     bool isInit = false;
+    
     // Configurable 
+    int lyricDockingStyle = Free;
+    int lyricPivotStyle = NotSet;
+    ImVec2 lyricPivotOffset;
+
     bool useExternalLyrics;
     float lyricWindowOpacity = 0.0f;
     bool showInternalLyrics;
