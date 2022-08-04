@@ -22,37 +22,6 @@ static const char* LyricDisplayTypeStrings[] = { "Ryhthm Game","PV Viewer","Not 
 static const char* LyricDisplayStatusStrings[] = { "Ended","Playing","Paused","Ready" };
 
 // Structs & Enums
-struct DivaInputState
-{
-    // https://github.com/nastys/MEGAHAKUS/blob/master/source/structs.h
-    struct ButtonState
-    {
-        uint32_t A;
-        uint32_t B;
-        uint32_t X;
-        uint32_t Y;
-    };
-    ButtonState Tapped;
-    ButtonState Released;
-    ButtonState Down;
-    uint32_t Padding_20[4];
-    ButtonState DoubleTapped;
-    uint32_t Padding_30[4];
-    ButtonState IntervalTapped;
-    uint32_t Padding_38[12];
-    uint32_t Padding_MM[8];
-    int32_t MouseX;
-    int32_t MouseY;
-    int32_t MouseDeltaX;
-    int32_t MouseDeltaY;
-    uint32_t Padding_AC[4];
-    float LeftJoystickX;
-    float LeftJoystickY;
-    float RightJoystickX;
-    float RightJoystickY;
-    char KeyPadding[3];
-    char Key;
-};
 enum LanguageType {
     Japanese = 0,
     English = 1,

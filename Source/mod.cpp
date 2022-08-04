@@ -94,14 +94,17 @@ HOOK(INT64, __fastcall, _UpdateLyrics, sigUpdateLyrics(), void* this_, int index
     return result;
 }
 
-HOOK(DivaInputState*, __fastcall, _GetInputState, sigGetInputState(), int player) {
+HOOK(void*, __fastcall, _GetInputState, sigGetInputState(), int player) {
     // TODO: Use this for ImGui's input handler
     // MM+ uses DirectInput for its main game.
     // But since there's no way to capture all keystrokes with this hook, I'll leave this as is.
     // Turns out dw_gui uses Win32 WndProc to handle K&M input as well...
-    DivaInputState* result = original_GetInputState(player);
+    void* result = original_GetInputState(player);
     if (result && (ImGui::GetIO().WantCaptureKeyboard || ImGui::GetIO().WantCaptureMouse))
-        memset(result, 0, sizeof(DivaInputState));
+    {
+        return original_GetInputState(1);
+        // Since there's no player 2...
+    }
     return result;
 }
 HOOK(char, __fastcall, _CopyCharsByCount, sigCopyCharsByCount(), const char* out,const char* in, int length) {
