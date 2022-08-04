@@ -13,6 +13,10 @@ private:
     
 public:
     bool isInit = false;
+    // Current combined font used for lyrics renderer
+    ImFont* font;
+    // Flag for triggering a font reload on next frame
+    bool reloadFonts = false;
     // Configurable
     float fontSize;
     float fontSizeImGui;
@@ -22,13 +26,8 @@ public:
     ImVec4 strokeColor;
     ImVec4 shadowColor;
     ImVec2 shadowOffset;
-
     int strokeSize;
-    // Current combined font used for lyrics renderer
-    ImFont* font;
     bool showGUI = true;
-    // Flag for triggering a font reload on next frame
-    bool reloadFonts = false;
     void Init(Config& cfg);
 
     Config& FromConfig(Config& cfg);

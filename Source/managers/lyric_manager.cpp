@@ -227,16 +227,16 @@ void LyricManager::OnImGUI() {
         ImGui::Checkbox("Show lyrics",&showLyrics);
         ImGui::Separator();
 
-        ImGui::Text("Docking (Automatic Aligment)");
+        ImGui::Text("Docking (Automatic Alignment)");
         if (ImGui::Button("Free")) {
             lyricDockingStyle = Free;
             lyricPivotStyle = NotSet;
         }
         ImGui::SameLine();
-        if (ImGui::Button("H. Center")) 
+        if (ImGui::Button("H.Center")) 
             lyricDockingStyle |= HorizontallyCentered;
         ImGui::SameLine();
-        if (ImGui::Button("V. Center")) 
+        if (ImGui::Button("V.Center")) 
             lyricDockingStyle |= VerticallyCentered; 
         ImGui::Separator();
         if (lyricDockingStyle == Free) {

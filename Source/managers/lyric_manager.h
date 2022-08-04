@@ -48,7 +48,6 @@ private:
     ImVec2 lyricPosBeforeMove;
 public:
     bool isInit = false;
-    
     // Configurable 
     int lyricDockingStyle = Free;
     int lyricPivotStyle = NotSet;
@@ -60,6 +59,7 @@ public:
     bool showLyrics;
 
     bool showGUI = true;
+    
     bool shouldShowLyrics();
 
     void Init(Config& cfg);
