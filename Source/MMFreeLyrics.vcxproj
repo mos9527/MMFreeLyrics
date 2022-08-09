@@ -111,6 +111,7 @@
     <IncludePath>.\;..\Dependencies\;..\Dependencies\subparser\;..\Dependencies\toml11\;..\Dependencies\imgui\;..\Dependencies\imgui\backends;..\Dependencies\detours\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\Dependencies;..\Dependencies\detours\lib\;$(LibraryPath)</LibraryPath>
     <OutDir>C:\Program Files (x86)\Steam\steamapps\common\Hatsune Miku Project DIVA Mega Mix Plus\mods\MMFreeLyrics\</OutDir>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

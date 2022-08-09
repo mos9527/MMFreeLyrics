@@ -5,7 +5,7 @@ date = "30.07.2022"
 description = """
 MegaMix+ 第三方 FreeType 字幕渲染模块
 -使用前请将欲使用的字体放在与 Dll 同一目录下的 fonts 文件夹
--使用歌词翻译模组时，若出现无法显示的字体，请将模组对应的 pv_db.txt 复制到本目录下，并更名为 charset.txt
+-使用歌词翻译模组时，若出现无法显示的字体，请参阅 README.md
 =======================
 热键
   - [Ctrl+F] 字体样式窗口
@@ -15,7 +15,7 @@ MegaMix+ 第三方 FreeType 字幕渲染模块
 =======================
 mos9527,2022\
 """
-version = "0.1.0b"
+version = "0.1.1b"
 dll = [
 "MMFreeLyrics.dll",
 ]

@@ -16,7 +16,6 @@ bool ImGui_CursorButton(const char * ID,ImGuiMouseCursor cursor,bool flipX = fal
 
 void LyricManager::Init(Config& cfg) {
     if (!isInit) {
-        styleTestString.assign(LYRIC_PLACEHOLDER_MESSAGE);
         FromConfig(cfg);
         isInit = true;
     }
@@ -260,26 +259,19 @@ void LyricManager::OnImGUI() {
         ImGui::End();
     }
     if (showLyrics) {
-        ImGui::SetNextWindowBgAlpha(lyricWindowOpacity);
-        ImGui::Begin(
-            "Lyric Overlay", NULL,
-            (!shouldShowLyrics() && showGUI) ? ImGuiWindowFlags_NoDecoration : (ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing)
-        );
-        if (shouldShowLyrics() && lyricIndex <= 0 && !useExternalLyrics)
+        bool isLyricsAvailable = shouldShowLyrics() && lyricIndex <= 0 && !useExternalLyrics;
+        if (!isLyricsAvailable) {
+            ImGui::SetNextWindowBgAlpha(lyricWindowOpacity);
+            ImGui::Begin(
+                "Lyric Overlay", NULL,
+                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing
+            );
+        }
+        if (isLyricsAvailable)
             return ImGui::End(); // Hide the window when we want to display lyrics but there's nothing to show
         ImGui::PushFont(FontManager_Inst.font);
         if (!shouldShowLyrics() && showGUI) {
-            // Allow the user to edit the text for style testing
-            ImVec2 size = ImGui::CalcTextSize(styleTestString.c_str()) + ImVec2(20,25);            
-            ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(0, 0));
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0,0));
-            ImGui::SetWindowSize(size, ImGuiCond_Always);            
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, 0, 0, 0));
-            ImGui::PushItemWidth(size.x);            
-            ImGui::InputText("###", &styleTestString, 1024);
-            ImGui::PopItemWidth();
-            ImGui::PopStyleColor();            
-            ImGui::PopStyleVar(2);
+            ImGui::Text(LYRIC_PLACEHOLDER_MESSAGE);
         }
         else {
             lock.lock();            

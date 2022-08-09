@@ -35,7 +35,6 @@ private:
     std::string internalLyricLine;
     std::mutex lock;
     std::string songAudioName;
-    std::string styleTestString;
 
     int lyricIndex = 0;
     std::vector<SubtitleItem*> externalLyrics;
