@@ -216,7 +216,7 @@ void LyricManager::OnImGUI() {
         ImGui::SliderFloat("Opacity", &lyricWindowOpacity, 0.0f, 1.0f, "%.1f");
         ImGuiStyle& style = ImGui::GetStyle();
         ImGui::Text("Borders");
-        ImGui::SliderFloat("WindowBorderSize", &style.WindowBorderSize, 0.0f, 1.0f, "%.0f");
+        ImGui::SliderFloat("WindowBorderSize", &style.WindowBorderSize, 0.0f, 10.0f, "%.0f");
         ImGui::Text("Rounding");
         ImGui::SliderFloat("WindowRounding", &style.WindowRounding, 0.0f, 12.0f, "%.0f");
         ImGui::Separator();

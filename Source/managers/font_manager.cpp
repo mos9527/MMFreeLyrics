@@ -240,23 +240,11 @@ void FontManager::OnImGUI() {
     ImGui::SliderInt("Stroke Size", &strokeSize, 0, 10);
 
     ImGui::Separator();
-    ImGui::Text("Shadows");
-    ImGui::Text("Shadow X=%.0f", shadowOffset.x);
-    ImGui::SameLine();
-    if (ImGui::Button("  Left  ")) shadowOffset.x = -2;
-    ImGui::SameLine();
-    if (ImGui::Button("H.Center")) shadowOffset.x = 0;
-    ImGui::SameLine();
-    if (ImGui::Button("  Right ")) shadowOffset.x = 2;
-
-    ImGui::Text("Shadow Y=%.0f", shadowOffset.y);
-    ImGui::SameLine();
-    if (ImGui::Button("  Top   ")) shadowOffset.y = -2;
-    ImGui::SameLine();
-    if (ImGui::Button("V.Center")) shadowOffset.y = 0;
-    ImGui::SameLine();
-    if (ImGui::Button(" Bottom ")) shadowOffset.y = 2;
-
+    ImGui::Text("Shadows");    
+    ImGui::SliderFloat("X", &shadowOffset.x, -10, 10);        
+    ImGui::SliderFloat("Y", &shadowOffset.y, -10, 10);
+    shadowOffset.x = ceilf(shadowOffset.x);
+    shadowOffset.y = ceilf(shadowOffset.y);
     ImGui::Separator();
     ImGui::Text("Font Colors & Misc");
     ImGui::ColorEdit4("Fill", (float*)&fillColor);
