@@ -91,3 +91,5 @@ https://github.com/blueskythlikesclouds/DivaModLoader
 https://github.com/nastys/MEGAHAKUS
 
 https://github.com/saurabhshri/simple-yet-powerful-srt-subtitle-parser-cpp
+
+https://github.com/BroGamer4256/discord

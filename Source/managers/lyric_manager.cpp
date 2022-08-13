@@ -126,7 +126,7 @@ void LyricManager::OnLyricsBegin() {
     if (useExternalLyrics) {
         // Attempt to load when there's nothing yet
         wchar_t buffer[64] = { 0 };
-        swprintf_s(buffer, L"PV%03d-%S", *PVID, LanguageTypeStrings[(LanguageType)*Language]);
+        swprintf_s(buffer, L"PV%03d-%S", *PVID, LanguageTypeStrings[*Language]);
         LOG(L"Attempting to load SubRip lyrics lyrics\\%s",buffer);
         std::wstring filename = FullPathInDllFolder(L"lyrics\\" + std::wstring(buffer) + L".srt");
         SubtitleParserFactory* subParserFactory = new SubtitleParserFactory(to_utf8(filename));
@@ -174,7 +174,7 @@ void LyricManager::OnImGUI() {
         ImGui::Text("Performance Metrics : %.1f FPS (%.3f ms)", ImGui::GetIO().Framerate , 1000.0f / ImGui::GetIO().Framerate);        
         ImGui::Separator();
         if (shouldShowLyrics()) {
-            ImGui::Text("Now Playing PVID: PV%03d-%s", *PVID, LanguageTypeStrings[(LanguageType)*Language]);
+            ImGui::Text("Now Playing PVID: PV%03d-%s (on %s)", *PVID, GameLanguageString(),GameDifficultyString());
             ImGui::PushFont(FontManager_Inst.font);
             ImGui::Text("%s", PVWaitScreenInfo->Name.c_str());
             ImGui::PopFont();
