@@ -94,9 +94,6 @@ void LyricManager::SetLyricLine(bool isLyric, const char* src) {
         internalLyricLine = src;
         lock.unlock();
     }
-    else {
-        lyricDisplayType = RyhthmGame;
-    }
 }
 
 /* Updates the 'GameState' and decide the state of the lyrics. */
@@ -106,14 +103,12 @@ void LyricManager::UpdateGameState(const char* state) {
             internalLyricLine.clear();
             displayStatus = NoLyric;
             lyricDisplayStatus = Ended;
-            lyricDisplayType = None;
             lyricIndex = 0;
             OnLyricsEnd();
         }
         else if (displayStatus != OnScreen && strcmp(state, "PV POST PROCESS TASK") == 0) {
             internalLyricLine.clear();
             displayStatus = OnScreen;
-            lyricDisplayType = PVMode;
             lyricDisplayStatus = Ready;
             OnLyricsBegin();
         }
@@ -200,7 +195,7 @@ void LyricManager::OnImGUI() {
                 LyricDisplayStatusStrings[lyricDisplayStatus],
                 lyricIndex,
                 *PVEvent,
-                LyricDisplayTypeStrings[lyricDisplayType],
+                GameModeString(),
                 TimeElapsed()
             );
             ImGui::Text(
@@ -209,7 +204,7 @@ void LyricManager::OnImGUI() {
             );
         }
         else {
-            ImGui::Text("No Lyric Type:%s", LyricDisplayTypeStrings[lyricDisplayType]);
+            ImGui::Text("No Lyric");
         }
         ImGui::Separator();
         ImGui::Text("Window Styling");
