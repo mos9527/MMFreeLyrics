@@ -5,6 +5,8 @@
 <img style="width:45%" src="https://user-images.githubusercontent.com/31397301/189489391-a887004b-00d9-4fd6-923a-b59113445b83.png" />
 <img style="width:45%" src="https://user-images.githubusercontent.com/31397301/189489760-18595187-99ea-43e9-ad8a-77ecd0cf595d.png" />
 </div>
+<hr>
+
     本模块将利用 FreeType + ImGui 接管游戏对 PV 歌词的内部渲染，以达成更优的视觉体验
     兼容版本 ： 1.0.2 
 
@@ -21,9 +23,6 @@
 - 兼容歌词 MOD
 - 兼容超长(78字)以上歌词
 - 加载外挂 `*.srt` 歌词
-
-## MOD 演示
-[[MOD 演示] 初音未来 Project DIVA MEGA 39's FreeType 歌词渲染](https://www.bilibili.com/video/BV1ha411N7qQ)
 
 ## MOD 安装
 - 配置 [DivaModLoader](https://github.com/blueskythlikesclouds/DivaModLoader)
