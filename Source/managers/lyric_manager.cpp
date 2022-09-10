@@ -254,15 +254,15 @@ void LyricManager::OnImGUI() {
         ImGui::End();
     }
     if (showLyrics) {
-        bool isLyricsAvailable = shouldShowLyrics() && lyricIndex <= 0 && !useExternalLyrics;
-        if (!isLyricsAvailable) {
+        bool isLyricsUnavailable = shouldShowLyrics() && lyricIndex <= 0 && !useExternalLyrics;
+        if (!isLyricsUnavailable) {
             ImGui::SetNextWindowBgAlpha(lyricWindowOpacity);
             ImGui::Begin(
                 "Lyric Overlay", NULL,
                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing
             );
         }
-        if (isLyricsAvailable)
+        if (isLyricsUnavailable)
             return ImGui::End(); // Hide the window when we want to display lyrics but there's nothing to show
         ImGui::PushFont(FontManager_Inst.font);
         if (!shouldShowLyrics() && showGUI) {

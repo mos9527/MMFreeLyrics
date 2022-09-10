@@ -10,7 +10,7 @@ inline void wprintf_(const wchar_t* fmt, ...) {
 		wchar_t buf[512] = { 0 };
 		va_list va;
 		va_start(va, fmt);
-		vswprintf(buf, _CRT_INT_MAX, fmt, va);
+		vswprintf(buf, 512, fmt, va);
 		WriteConsoleW(hdl, buf, (int)wcslen(buf), NULL, NULL);
 		va_end(va);
 	}	

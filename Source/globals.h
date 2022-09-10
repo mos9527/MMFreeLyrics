@@ -15,8 +15,6 @@
 #include <mutex>
 #include <map>
 #include <algorithm>
-#include <io.h>
-#include <fcntl.h>
 // Dependencies
 #include <Windows.h>
 #include <detours.h>

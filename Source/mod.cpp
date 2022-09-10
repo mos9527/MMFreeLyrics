@@ -62,14 +62,16 @@ HOOK(char*, __fastcall, _LoadSongAudio, sigLoadSongAudio(),
 
 HOOK(INT64, __fastcall, _ChangeGameState, sigChangeGameState(), INT64* a, const char* state) {
 	INT64 result = original_ChangeGameState(a, state);
+#ifdef DEBUG
 	LOG(L"Gamestate changed to : %S", state);
+#endif // DEBUG
     LyricManager_Inst.UpdateGameState(state);
 	return result;
 }
 std::string lyricsBuffer;
 HOOK(void**, __fastcall, _RenderLyricAndTitle, sigRenderLyricAndTitle(),
-    float x,
     float y,
+    float x,
     unsigned int scale,
     int a4,
     const char* text,
@@ -77,14 +79,14 @@ HOOK(void**, __fastcall, _RenderLyricAndTitle, sigRenderLyricAndTitle(),
     unsigned int a7,
     void** a8)
 {
-    bool isLyric = x == 172.0f;    
+    bool isLyric = y == 172.0f;    
     if (isLyric){
         lyricsBuffer = LyricManager_Inst.showInternalLyrics ? LyricManager_Inst.GetCurrentLyricLine() : ""; 
         // Maintain a local copy in case the return value gets destoryed
-        return original_RenderLyricAndTitle(x, y, scale, a4, lyricsBuffer.c_str(), a6, a7, a8);
+        return original_RenderLyricAndTitle(y, x, scale, a4, lyricsBuffer.c_str(), a6, a7, a8);
     } else {
         LyricManager_Inst.SetLyricLine(false, NULL);
-        return original_RenderLyricAndTitle(x, y, scale, a4, text, a6, a7, a8);;
+        return original_RenderLyricAndTitle(y, x, scale, a4, text, a6, a7, a8);;
     }
 }
 
@@ -210,19 +212,16 @@ extern "C"
         INSTALL_HOOK(_UpdateLyrics);
         INSTALL_HOOK(_GetInputState);
         INSTALL_HOOK(_CopyCharsByCount);
+        LOG(L"Hooks installed.");
         ImGui::CreateContext();
         SET_IMGUI_DEFAULT_FLAGS;
-        LOG(L"Hooks installed.");           
+		LOG(L"Initializing...");
+		Config::LoadGlobalConfig();
+		LyricManager_Inst.Init(GlobalConfig_Inst);
+		FontManager_Inst.Init(GlobalConfig_Inst);
+		LOG(L"Initialized.");
     }
     void __declspec(dllexport) OnFrame(IDXGISwapChain* m_pSwapChain) {
-        if (!LyricManager_Inst.isInit && !FontManager_Inst.isInit) {
-            LOG(L"Initializing...");
-            Config::LoadGlobalConfig();
-            LyricManager_Inst.Init(GlobalConfig_Inst);
-            FontManager_Inst.Init(GlobalConfig_Inst);
-            LOG(L"Initialization complete.");
-        }
-
         LyricManager_Inst.OnFrame();
         FontManager_Inst.OnFrame();
 
