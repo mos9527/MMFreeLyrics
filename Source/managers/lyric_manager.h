@@ -32,8 +32,7 @@ class LyricManager {
         BottomRight
     };
 private:
-    std::string internalLyricLine;
-    std::mutex lock;
+    std::string internalLyricLine;    
     std::string songAudioName;
 
     int lyricIndex = 0;

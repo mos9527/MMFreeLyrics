@@ -80,19 +80,15 @@ void LyricManager::SetSongAudio(const char* src) {
 void LyricManager::UpdateLyricIndex(int index) {
     lyricIndex = index;
     if (index == 0)
-    {
-        lock.lock();
-        internalLyricLine.clear();
-        lock.unlock();
+    {        
+        internalLyricLine.clear();        
     }
 }
 
-/* Set current lyric line with a lock. */
+/* Set current lyric line */
 void LyricManager::SetLyricLine(bool isLyric, const char* src) {
-    if (isLyric && src) {
-        lock.lock();        
-        internalLyricLine = src;
-        lock.unlock();
+    if (isLyric && src) {        
+        internalLyricLine = src;        
     }
 }
 
@@ -100,16 +96,9 @@ void LyricManager::SetLyricLine(bool isLyric, const char* src) {
 void LyricManager::UpdateGameState(const char* state) {
     if (state) {
         if (displayStatus == OnScreen && (strcmp(state, "PVsel") == 0)) {
-            internalLyricLine.clear();
-            displayStatus = NoLyric;
-            lyricDisplayStatus = Ended;
-            lyricIndex = 0;
             OnLyricsEnd();
         }
         else if (displayStatus != OnScreen && strcmp(state, "PV POST PROCESS TASK") == 0) {
-            internalLyricLine.clear();
-            displayStatus = OnScreen;
-            lyricDisplayStatus = Ready;
             OnLyricsBegin();
         }
     }
@@ -118,6 +107,9 @@ void LyricManager::UpdateGameState(const char* state) {
 /* Called when Ryhthm Game / PV Session starts.*/
 void LyricManager::OnLyricsBegin() {
     LOG(L"Started PV%d", *PVID);    
+    internalLyricLine.clear();
+    displayStatus = OnScreen;
+    lyricDisplayStatus = Ready;
     if (useExternalLyrics) {
         // Attempt to load when there's nothing yet
         wchar_t buffer[64] = { 0 };
@@ -146,8 +138,12 @@ void LyricManager::OnLyricsBegin() {
 
 /* Called when Ryhthm Game / PV Session ends.*/
 void LyricManager::OnLyricsEnd() {
-    LOG(L"Lyrics Ended.");
+    internalLyricLine.clear();
     externalLyrics.clear();
+    displayStatus = NoLyric;
+    lyricDisplayStatus = Ended;
+    lyricIndex = 0;
+    LOG(L"Lyrics Ended.");
 }
 
 /* Called by DX Hook's OnFrame. Do not override.*/
@@ -254,24 +250,22 @@ void LyricManager::OnImGUI() {
         ImGui::End();
     }
     if (showLyrics) {
-        bool isLyricsUnavailable = shouldShowLyrics() && lyricIndex <= 0 && !useExternalLyrics;
-        if (!isLyricsUnavailable) {
+        auto lyrics = GetCurrentLyricLine();
+        bool isLyricsUnavailable = lyricIndex <= 0 || lyrics.length() <= 0;
+        if ((shouldShowLyrics() && !isLyricsUnavailable) || (!shouldShowLyrics() && showGUI)) {
             ImGui::SetNextWindowBgAlpha(lyricWindowOpacity);
             ImGui::Begin(
                 "Lyric Overlay", NULL,
                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing
             );
         }
-        if (isLyricsUnavailable)
-            return ImGui::End(); // Hide the window when we want to display lyrics but there's nothing to show
+        else return; // Hide the window when we want to display lyrics but there's nothing to show
         ImGui::PushFont(FontManager_Inst.font);
         if (!shouldShowLyrics() && showGUI) {
             ImGui::Text(LYRIC_PLACEHOLDER_MESSAGE);
         }
         else {
-            lock.lock();            
-            ImGui::Text(GetCurrentLyricLine().c_str());
-            lock.unlock();
+            ImGui::Text(lyrics.c_str());            
         }
         ImGui::PopFont();
         auto viewport = ImGui::GetMainViewport();

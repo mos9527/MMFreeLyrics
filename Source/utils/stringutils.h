@@ -41,5 +41,5 @@ inline std::wstring FullPathInDllFolder(std::wstring fileName) {
 }
 
 inline std::string FileNameFromPath(std::string path) {
-    return path.substr(path.find_last_of("/\\"), path.size());
+    return path.substr(path.find_last_of("/\\") + 1, path.size());
 }

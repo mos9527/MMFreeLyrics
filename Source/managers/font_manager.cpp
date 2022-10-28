@@ -201,7 +201,7 @@ void FontManager::OnImGUI() {
     ImGui::Text("Current charset size (Custom): %d", charset.size());
     ImGui::Text("Fonts");
     if (fontsAvailable.size() > 0) {
-        if (ImGui::BeginCombo("Default (w/ Romal & Japanese charset)", FileNameFromPath(*fontnameDefault).c_str() + 1)) {
+        if (ImGui::BeginCombo("Default (w/ Romal & Japanese charset)", FileNameFromPath(*fontnameDefault).c_str())) {
             for (int i = 0; i < fontsAvailable.size(); i++) {
                 std::string* font = &fontsAvailable[i];
                 const bool isSelected = (font == fontnameDefault);
@@ -215,7 +215,7 @@ void FontManager::OnImGUI() {
             ImGui::EndCombo();
         }
 
-        if (ImGui::BeginCombo("Fallback (w/ Custom Charset)", FileNameFromPath(*fontnameWithCharset).c_str() + 1)) {
+        if (ImGui::BeginCombo("Fallback (w/ Custom Charset)", FileNameFromPath(*fontnameWithCharset).c_str())) {
             for (int i = 0; i < fontsAvailable.size(); i++) {
                 std::string* font = &fontsAvailable[i];
                 const bool isSelected = (font == fontnameWithCharset);
@@ -233,6 +233,7 @@ void FontManager::OnImGUI() {
     else {
         ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "WARNING : No fonts available!");
     }
+    if (ImGui::Button("Refresh List")) RefreshFontList();
     ImGui::Text("Font Size");
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "WARNING : Going for a large font size might crash the texture creation procedure!");
     ImGui::SliderFloat("Font Size", &fontSize, 10, 100, "%.1f");
