@@ -259,21 +259,20 @@ void LyricManager::OnImGUI() {
         else {
             display = lyrics.c_str();
         }        
-        ImGui::PushFont(FontManager_Inst.font);
-        auto size = ImGui::CalcTextSize(display);
         // With AutoResize, the window rectangle doesn't get updated on the first frame somehow
         // Manually calculate text size before Begin() to correct it.
         if ((shouldShowLyrics() && !isLyricsUnavailable) || (!shouldShowLyrics() && showGUI)) {
             ImGui::SetNextWindowBgAlpha(lyricWindowOpacity);
-            ImGui::SetNextWindowSize(size + ImGui::GetStyle().FramePadding * 2 + ImGui::GetStyle().WindowPadding);
+            ImGui::PushFont(FontManager_Inst.font);
+            ImGui::SetNextWindowSize(ImGui::CalcTextSize(display) + ImGui::GetStyle().FramePadding * 2 + ImGui::GetStyle().WindowPadding);
             ImGui::Begin(
                 "Lyric Overlay", NULL,
                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoResize
             );                   
+            ImGui::Text(display);            
+            ImGui::PopFont();
         }
         else return; // Hide the window when we want to display lyrics but there's nothing to show          
-        ImGui::Text(display);
-        ImGui::PopFont();
         auto viewport = ImGui::GetMainViewport();
         auto window = ImGui::GetCurrentWindow();
         // Docking Mode
