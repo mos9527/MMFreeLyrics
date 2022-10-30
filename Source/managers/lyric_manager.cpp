@@ -252,26 +252,32 @@ void LyricManager::OnImGUI() {
     if (showLyrics) {
         auto lyrics = GetCurrentLyricLine();
         bool isLyricsUnavailable = lyricIndex <= 0 || lyrics.length() <= 0;
-        if ((shouldShowLyrics() && !isLyricsUnavailable) || (!shouldShowLyrics() && showGUI)) {
-            ImGui::SetNextWindowBgAlpha(lyricWindowOpacity);
-            ImGui::Begin(
-                "Lyric Overlay", NULL,
-                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing
-            );
-        }
-        else return; // Hide the window when we want to display lyrics but there's nothing to show
-        ImGui::PushFont(FontManager_Inst.font);
+        const char* display;
         if (!shouldShowLyrics() && showGUI) {
-            ImGui::Text(LYRIC_PLACEHOLDER_MESSAGE);
+            display = LYRIC_PLACEHOLDER_MESSAGE;
         }
         else {
-            ImGui::Text(lyrics.c_str());            
+            display = lyrics.c_str();
+        }        
+        ImGui::PushFont(FontManager_Inst.font);
+        auto size = ImGui::CalcTextSize(display);
+        // With AutoResize, the window rectangle doesn't get updated on the first frame somehow
+        // Manually calculate text size before Begin() to correct it.
+        if ((shouldShowLyrics() && !isLyricsUnavailable) || (!shouldShowLyrics() && showGUI)) {
+            ImGui::SetNextWindowBgAlpha(lyricWindowOpacity);
+            ImGui::SetNextWindowSize(size + ImGui::GetStyle().FramePadding * 2 + ImGui::GetStyle().WindowPadding);
+            ImGui::Begin(
+                "Lyric Overlay", NULL,
+                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoResize
+            );                   
         }
+        else return; // Hide the window when we want to display lyrics but there's nothing to show          
+        ImGui::Text(display);
         ImGui::PopFont();
         auto viewport = ImGui::GetMainViewport();
         auto window = ImGui::GetCurrentWindow();
         // Docking Mode
-        // The movement axies are restrained to some degree by the docking settings
+        // The movement axies are restrained to some degree by the docking settings        
         if (lyricDockingStyle != Free) {
             window->SetWindowPosPivot = ImVec2(
                 0.5f * (lyricDockingStyle & HorizontallyCentered),
@@ -314,9 +320,9 @@ void LyricManager::OnImGUI() {
                     window->SetWindowPosPivot = pivot;
                     window->SetWindowPosVal = viewport->Size * pivot + lyricPivotOffset;
                 }
-            }
+            }            
         }
-        ImGui::End();
+        ImGui::End();       
     }
 }
 LyricManager LyricManager_Inst;
