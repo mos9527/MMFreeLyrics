@@ -44,6 +44,8 @@ private:
 
     bool lyricWasMoved = false;
     ImVec2 lyricPosBeforeMove;
+
+    long exSubOffset = 0;
 public:
     bool isInit = false;
     // Configurable 

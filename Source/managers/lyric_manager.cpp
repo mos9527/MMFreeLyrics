@@ -62,7 +62,7 @@ float LyricManager::TimeElapsed() {
 /* Current line of lyrics being displayed. */
 std::string LyricManager::GetCurrentLyricLine() {
     if (useExternalLyrics && externalLyrics.size() > 0) {
-        auto subtitle = SubtitleItem::getByTimestamp(externalLyrics, (long)(*PVTimestamp * 1000));
+        auto subtitle = SubtitleItem::getByTimestamp(externalLyrics, (long)(*PVTimestamp * 1000) + exSubOffset);
         if (subtitle)
             return subtitle->getText();
         else
@@ -194,10 +194,14 @@ void LyricManager::OnImGUI() {
                 GameModeString(),
                 TimeElapsed()
             );
-            ImGui::Text(
-                "Loaded external lyrics lines:%d",
-                externalLyrics.size()
-            );
+            if (externalLyrics.size() > 0) {
+                ImGui::Text(
+                    "Using External Lyrics (%d lines)",
+                    externalLyrics.size()
+                );
+                ImGui::Separator();
+                ImGui::SliderInt("Time Offset (ms)", (int*)&exSubOffset, -5000, 5000);
+            }
         }
         else {
             ImGui::Text("No Lyric");
