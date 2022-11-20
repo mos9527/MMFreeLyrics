@@ -255,7 +255,7 @@ void LyricManager::OnImGUI() {
     }
     if (showLyrics) {
         auto lyrics = GetCurrentLyricLine();
-        bool isLyricsUnavailable = lyricIndex <= 0 || lyrics.length() <= 0;
+        bool isLyricsUnavailable = (lyricIndex <= 0 && !useExternalLyrics) || lyrics.length() <= 0;
         const char* display;
         if (!shouldShowLyrics() && showGUI) {
             display = LYRIC_PLACEHOLDER_MESSAGE;
