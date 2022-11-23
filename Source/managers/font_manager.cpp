@@ -10,9 +10,8 @@ void FontManager::Init(Config& cfg) {
             // Assign default fonts by alphabetical order
         }
         FromConfig(cfg);
-        charset.clear();
-        UpdateCharset(to_utf8(FullPathInDllFolder(DEFAULT_CHARSET_NAME)).c_str());
-        RebuildFonts();
+        UpdateCharset(L""); // For the placeholder meesage to be present in the first place
+        reloadFonts = true;
         isInit = true;
     }
 }
@@ -62,27 +61,13 @@ Config& FontManager::ToConfig(Config& cfg) {
 - Otherwise, it would use a fallback charset which would cover most Japanese characters & Romal characters
 */
 int FontManager::UpdateCharset(std::wstring chars) {
+    charset.clear();
     LOG(L"Enumerating unique characters...");
     size_t size_before = charset.size();
-    for (auto& c : chars) charset[c] = 1;
+    for (auto& c : LYRIC_PLACEHOLDER_MESSAGE) if (c)  charset[c] = 1;
+    for (auto& c : chars) if (c) charset[c] = 1;
     LOG(L"%zd new unique characters (out of %zd) will be built into atlas.", charset.size() - size_before, chars.size());
     return (int)(charset.size() - size_before);
-}
-
-int FontManager::UpdateCharset(const char * charset_filename) {
-    std::ifstream f(charset_filename);
-    if (!f.is_open()) {
-        MessageBoxW(
-            window,
-            CHARSET_NOTFOUND_WARNING,
-            MESSAGEBOX_TITLE,
-            MB_ICONEXCLAMATION
-        );
-        return 0;
-    }  
-    std::stringstream charbuf; charbuf << f.rdbuf();
-    std::wstring chars = to_wstr(charbuf.str());
-    return UpdateCharset(chars);
 }
 
 /* Retrives all available fonts under the fonts\ directroy. Results are alphabetically sorted. */
@@ -198,7 +183,7 @@ void FontManager::OnImGUI() {
     ImGui::SetNextWindowBgAlpha(0.5);
     ImGui::Begin("Fonts [Ctrl+F]");
     ImGui::Text("Note : The settings here don't reflect automatically. You need to apply it first.");
-    ImGui::Text("Current charset size (Custom): %d", charset.size());
+    ImGui::Text("Current charset size : %d", charset.size());
     ImGui::Text("Fonts");
     if (fontsAvailable.size() > 0) {
         if (ImGui::BeginCombo("Default (w/ Romal & Japanese charset)", FileNameFromPath(*fontnameDefault).c_str())) {

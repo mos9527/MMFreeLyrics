@@ -9,7 +9,6 @@ private:
     std::vector<std::string> fontsAvailable;
     std::string* fontnameDefault = NULL;
     std::string* fontnameWithCharset = NULL;
-    std::map<wchar_t, int> charset;
     
 public:
     bool isInit = false;
@@ -17,6 +16,11 @@ public:
     ImFont* font;
     // Flag for triggering a font reload on next frame
     bool reloadFonts = false;
+    // Current Charset buffer
+    std::map<wchar_t, int> charset;
+    // PVDB & Charset buffer
+    std::map<int, std::string> PVDB_Buffer;
+    std::map<int, std::map<wchar_t, int>> PVDB_Charset_Buffer;
     // Configurable
     float fontSize;
     float fontSizeImGui;
@@ -35,7 +39,6 @@ public:
 
     std::vector<std::string>& RefreshFontList();
 
-    int UpdateCharset(const char* charset_filename);
     int UpdateCharset(std::wstring chars);
     void RebuildFonts();
     void OnFrame();

@@ -255,7 +255,7 @@ del "$(OutputPath)*.lib"</Command>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>7z a "$(SolutionDir)..\MMFreeLyrics.zip" "$(OutputPath)*.dll" "$(SolutionDir)..\config.toml" "$(SolutionDir)..\Misc\charset\charset.txt" "$(SolutionDir)..\README.md"</Command>
+      <Command>7z a "$(SolutionDir)..\MMFreeLyrics.zip" "$(OutputPath)*.dll" "$(SolutionDir)..\config.toml" "$(SolutionDir)..\README.md"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -339,9 +339,6 @@ del "$(OutputPath)*.lib"</Command>
     <None Include="..\config.toml" />
     <None Include="..\Misc\charset\make.py" />
     <None Include="..\README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\Misc\charset\charset.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

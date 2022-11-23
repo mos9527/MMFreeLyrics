@@ -114,7 +114,7 @@ void LyricManager::OnLyricsBegin() {
         // Attempt to load when there's nothing yet
         wchar_t buffer[64] = { 0 };
         swprintf_s(buffer, L"PV%03d-%S", *PVID, LanguageTypeStrings[*Language]);
-        LOG(L"Attempting to load SubRip lyrics lyrics\\%s",buffer);
+        LOG(L"Attempting to load SubRip lyrics lyrics\\%s", buffer);
         std::wstring filename = FullPathInDllFolder(L"lyrics\\" + std::wstring(buffer) + L".srt");
         SubtitleParserFactory* subParserFactory = new SubtitleParserFactory(to_utf8(filename));
         SubtitleParser* parser = subParserFactory->getParser();
@@ -124,16 +124,28 @@ void LyricManager::OnLyricsBegin() {
             LOG(L"SubRip file loaded. Lines: %d", externalLyrics.size());
             std::wstring buffer;
             for (auto line : externalLyrics)
-                buffer += to_wstr(line->getText());
-            if (FontManager_Inst.UpdateCharset(buffer)) {
-                // Rebuild fonts if anything new is added
-                FontManager_Inst.reloadFonts = true;
-            }
+                buffer += to_wstr(line->getText());            
+            if (FontManager_Inst.UpdateCharset(buffer))
+                FontManager_Inst.reloadFonts = true;     
+            return;
         }
         else {
-           LOG(L"Failed to load SubRip (*.srt) file.");
+            LOG(L"Failed to load SubRip (*.srt) file.");
         }
     }
+    LOG(L"Using internal charset for PVID %d", *PVID);
+        std::wstring buffer;
+        if (FontManager_Inst.PVDB_Buffer.count(*PVID)) {
+            if (FontManager_Inst.PVDB_Charset_Buffer.count(*PVID) <= 0) {
+                std::wstring buffer = to_wstr(FontManager_Inst.PVDB_Buffer[*PVID]);
+                if (FontManager_Inst.UpdateCharset(buffer))
+                    FontManager_Inst.reloadFonts = true;
+                FontManager_Inst.PVDB_Charset_Buffer[*PVID] = FontManager_Inst.charset;
+            }
+            FontManager_Inst.charset = FontManager_Inst.PVDB_Charset_Buffer[*PVID];
+            FontManager_Inst.reloadFonts = true;
+            
+        }
 }
 
 /* Called when Ryhthm Game / PV Session ends.*/

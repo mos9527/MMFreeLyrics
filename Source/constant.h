@@ -4,11 +4,6 @@
 #define DEFAULT_CHARSET_NAME L"charset.txt"
 #define MESSAGEBOX_TITLE L"MegaMix+ Freetype Lyrics"
 
-#define CHARSET_NOTFOUND_WARNING L"Default charset file " DEFAULT_CHARSET_NAME " not found. \n\n\
-If you're using non-English lyrics translation mod, This will probably cause some characters appears to be missing \n\n\
-In which case, you should copy their pv_db.txt file here alongside the DLLs, and rename it into " DEFAULT_CHARSET_NAME" .\n\n\
-Otherwise, it's safe to ignore this error."
-
 #define FONTS_FOLDER_NOT_FOUND L"Fonts folder 'fonts\' not found. \n\n\
 This will cause the renderer to use the built-in ImGui font (aka ProggyClean), \n\n\
 which has NO SUPPORT for CJK glyphs. (in which case they get replaced by ?).\n\n\

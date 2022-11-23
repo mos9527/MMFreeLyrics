@@ -21,7 +21,7 @@
     - ...
 - 配置文件支持
 - 兼容歌词 MOD
-- 兼容超长(78字)以上歌词
+- 兼容超长(76字)以上歌词
 - 加载外挂 `*.srt` 歌词
 
 ## MOD 安装
@@ -42,7 +42,6 @@
     
         HATSUNE MIKU PROJECT DIVA MEGA MIX PLUS\MODS\MMFREELYRICS
         |   ...
-        │   charset.txt*
         │   config.toml*
         │   MMFreeLyrics.dll*
         └───lyrics                
@@ -53,10 +52,6 @@
                 font_2.otf
                 ...
        
-## 歌词 MOD 兼容性
-- 如果还使用了歌词翻译 MOD 且遇到缺字问题：
-    - 将翻译模组文件夹内的 `pv_db.txt` 内容复制于本模组目录下 `charset.txt` 内
-    - 尝试调整 `Fonts` 中 `Fallback` 字体
 
 ### 热键
 |热键|功能|

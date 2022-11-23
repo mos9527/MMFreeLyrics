@@ -45,6 +45,13 @@ SIG_SCAN
     "\x48\x8B\xC2\x4D\x85\xC0\x74\x26\x4D\x8D\x48\xFF\x4C\x03\xC9\x49\x3B\xC9\x74\x17\x44\x0F\xB6\x00",
     "xxxxxxxxxxxxxxxxxxxxxxxx"
 )
+SIG_SCAN
+(
+    sigPVDBLookup,
+    0x14018B100,
+    "\x40\x53\x55\x41\x54\x41\x56\x41\x57\x48\x83\xEC\x40\x48\x8B\x05\x00\x00\x00\x00\x48\x33\xC4\x48\x89\x44\x24\x00",
+    "xxxxxxxxxxxxxxxx????xxxxxxx?"
+)
 HOOK(char*, __fastcall, _LoadSongAudio, sigLoadSongAudio(), 
     __int64 a1,
     __int64 a2,
@@ -62,7 +69,7 @@ HOOK(char*, __fastcall, _LoadSongAudio, sigLoadSongAudio(),
 
 HOOK(INT64, __fastcall, _ChangeGameState, sigChangeGameState(), INT64* a, const char* state) {
 	INT64 result = original_ChangeGameState(a, state);
-#ifdef DEBUG
+#ifdef _DEBUG
 	LOG(L"Gamestate changed to : %S", state);
 #endif // DEBUG
     LyricManager_Inst.UpdateGameState(state);
@@ -112,10 +119,35 @@ HOOK(void*, __fastcall, _GetInputState, sigGetInputState(), int player) {
 
 HOOK(char, __fastcall, _CopyCharsByCount, sigCopyCharsByCount(), const char* out,const char* in, int length) {
     if (length == 0x4C && LyricManager_Inst.shouldShowLyrics()) {
-        // Magic number! 78 chars is only used during lyrics rendering
+        // Magic number! 76 chars is only used during lyrics rendering
         LyricManager_Inst.SetLyricLine(true, in);
     }
     return original_CopyCharsByCount(out, in, length);    
+}
+
+HOOK(__int64*, __fastcall, _PVDBLookup, sigPVDBLookup(), __int64* tbl_address_end, __int64* tbl_address, char** tbl_name) {
+    auto result = original_PVDBLookup(tbl_address_end, tbl_address, tbl_name);
+    int n = (tbl_address_end - tbl_address) / 8;
+    if (n >= 7 && strlen(*tbl_name) == 7) {     
+        int pvid; sscanf_s(*tbl_name, "pv_%d.", &pvid);
+        if (pvid == 0) // New pv_db (or mod_ variant) is loaded
+        {
+            // The pv_db content, once read by MM+ , will be cleared at once
+            // Copy it at init time (id=0) for our own uses.
+            char* pvdb_buffer = (char*)(*(tbl_address_end)+3);            
+            std::istringstream pvdb(pvdb_buffer);
+            std::string pvdb_line;
+            while (std::getline(pvdb,pvdb_line)) {
+                try
+                {
+                    auto pvid = std::stoi(pvdb_line.substr(3, 3));
+                    FontManager_Inst.PVDB_Buffer[pvid].append(pvdb_line);
+                }
+                catch (...) { }
+            }
+        }
+    }
+    return result;
 }
 void CreateRenderTarget()
 {
@@ -212,6 +244,7 @@ extern "C"
         INSTALL_HOOK(_UpdateLyrics);
         INSTALL_HOOK(_GetInputState);
         INSTALL_HOOK(_CopyCharsByCount);
+        INSTALL_HOOK(_PVDBLookup);
         LOG(L"Hooks installed.");
         ImGui::CreateContext();
         SET_IMGUI_DEFAULT_FLAGS;
