@@ -128,6 +128,7 @@ void LyricManager::OnLyricsBegin() {
             for (auto line : externalLyrics)
                 buffer += to_wstr(line->getText());
             buffer += to_wstr(lyricFormat);
+            FontManager_Inst.charset.clear();
             if (FontManager_Inst.UpdateCharset(buffer))
                 FontManager_Inst.reloadFonts = true;     
             return;
@@ -142,6 +143,7 @@ void LyricManager::OnLyricsBegin() {
             if (FontManager_Inst.PVDB_Charset_Buffer.count(*PVID) <= 0) {
                 std::wstring buffer = to_wstr(FontManager_Inst.PVDB_Buffer[*PVID]);
                 buffer += to_wstr(lyricFormat);
+                FontManager_Inst.charset.clear();
                 if (FontManager_Inst.UpdateCharset(buffer))
                     FontManager_Inst.reloadFonts = true;
                 FontManager_Inst.PVDB_Charset_Buffer[*PVID] = FontManager_Inst.charset;
@@ -240,6 +242,9 @@ void LyricManager::OnImGUI() {
         ImGui::PushFont(FontManager_Inst.font);
         ImGui::InputText("##", &lyricFormat);
         ImGui::PopFont();
+        if (ImGui::Button("Push to Charset"))
+            if (FontManager_Inst.UpdateCharset(to_wstr(lyricFormat)))
+                FontManager_Inst.reloadFonts = true;
         ImGui::Text("Docking (Automatic Alignment)");
         if (ImGui::Button("Free")) {
             lyricDockingStyle = Free;

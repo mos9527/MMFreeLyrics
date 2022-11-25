@@ -60,8 +60,7 @@ Config& FontManager::ToConfig(Config& cfg) {
 - Normally it should contain the pv_db.txt from any lyrics mod you're using
 - Otherwise, it would use a fallback charset which would cover most Japanese characters & Romal characters
 */
-int FontManager::UpdateCharset(std::wstring chars) {
-    charset.clear();
+int FontManager::UpdateCharset(std::wstring chars) {    
     LOG(L"Enumerating unique characters...");
     size_t size_before = charset.size();
     for (auto& c : LYRIC_PLACEHOLDER_MESSAGE) if (c)  charset[c] = 1;
