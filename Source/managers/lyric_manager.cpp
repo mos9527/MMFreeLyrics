@@ -126,7 +126,8 @@ void LyricManager::OnLyricsBegin() {
             LOG(L"SubRip file loaded. Lines: %d", externalLyrics.size());
             std::wstring buffer;
             for (auto line : externalLyrics)
-                buffer += to_wstr(line->getText());            
+                buffer += to_wstr(line->getText());
+            buffer += to_wstr(lyricFormat);
             if (FontManager_Inst.UpdateCharset(buffer))
                 FontManager_Inst.reloadFonts = true;     
             return;
@@ -140,6 +141,7 @@ void LyricManager::OnLyricsBegin() {
         if (FontManager_Inst.PVDB_Buffer.count(*PVID)) {
             if (FontManager_Inst.PVDB_Charset_Buffer.count(*PVID) <= 0) {
                 std::wstring buffer = to_wstr(FontManager_Inst.PVDB_Buffer[*PVID]);
+                buffer += to_wstr(lyricFormat);
                 if (FontManager_Inst.UpdateCharset(buffer))
                     FontManager_Inst.reloadFonts = true;
                 FontManager_Inst.PVDB_Charset_Buffer[*PVID] = FontManager_Inst.charset;
