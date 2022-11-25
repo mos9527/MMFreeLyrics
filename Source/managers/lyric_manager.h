@@ -52,6 +52,7 @@ public:
     int lyricDockingStyle = Free;
     int lyricPivotStyle = NotSet;
     ImVec2 lyricPivotOffset;
+    std::string lyricFormat;
 
     bool useExternalLyrics;
     float lyricWindowOpacity = 0.0f;

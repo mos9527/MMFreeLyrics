@@ -30,6 +30,7 @@ public:
 	int lyricDockingStyle;
 	int lyricPivotStyle;
 	ImVec2 lyricPivotOffset;
+	std::string lyricFormat;
 	// ImGui Styles
 	float WindowBorderSize;
 	float WindowRounding;	

@@ -13,6 +13,7 @@ void Config::LoadDefault() {
 	shadowColor = ImVec4(0, 0, 0, 0.5);
 
 	lyricWindowOpacity = 0.0f;
+	lyricFormat = "%s";
 
 	WindowBorderSize = 0.0f;
 	WindowRounding = 12.0f;
@@ -53,6 +54,7 @@ bool Config::Save() {
 	ASSIGN_TO_TABLE(showLyrics);
 	ASSIGN_TO_TABLE(lyricDockingStyle);
 	ASSIGN_TO_TABLE(lyricPivotStyle);
+	ASSIGN_TO_TABLE(lyricFormat);
 
 	VEC2_TO_XY(lyricPivotOffset);
 	ASSIGN_TO_TABLE(lyricPivotOffsetX);
@@ -118,7 +120,7 @@ bool Config::Load() {
 			showLyrics = freelyrics["showLyrics"].as_boolean();
 			lyricDockingStyle = freelyrics["lyricDockingStyle"].as_integer();
 			lyricPivotStyle = freelyrics["lyricPivotStyle"].as_integer();
-			
+			lyricFormat = freelyrics["lyricFormat"].as_string();
 			lyricPivotOffset = ImVec2(
 				freelyrics["lyricPivotOffsetX"].as_floating(),
 				freelyrics["lyricPivotOffsetY"].as_floating()

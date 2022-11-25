@@ -30,6 +30,7 @@ Config& LyricManager::FromConfig(Config& cfg) {
     lyricDockingStyle = (LyricDockingStyle)cfg.lyricDockingStyle;
     lyricPivotStyle = (LyricPivotStyle)cfg.lyricPivotStyle;
     lyricPivotOffset = cfg.lyricPivotOffset;
+    lyricFormat = cfg.lyricFormat;
     ImGui::GetStyle().WindowBorderSize = cfg.WindowBorderSize;
     ImGui::GetStyle().WindowRounding = cfg.WindowRounding;
     return cfg;
@@ -44,6 +45,7 @@ Config& LyricManager::ToConfig(Config& cfg) {
     cfg.lyricDockingStyle = lyricDockingStyle;
     cfg.lyricPivotStyle = lyricPivotStyle;
     cfg.lyricPivotOffset = lyricPivotOffset;
+    cfg.lyricFormat = lyricFormat;
     cfg.WindowBorderSize = ImGui::GetStyle().WindowBorderSize;
     cfg.WindowRounding = ImGui::GetStyle().WindowRounding;
     return cfg;
@@ -232,7 +234,10 @@ void LyricManager::OnImGUI() {
         ImGui::SameLine();
         ImGui::Checkbox("Show lyrics",&showLyrics);
         ImGui::Separator();
-
+        ImGui::Text("Lyric Format");
+        ImGui::PushFont(FontManager_Inst.font);
+        ImGui::InputText("##", &lyricFormat);
+        ImGui::PopFont();
         ImGui::Text("Docking (Automatic Alignment)");
         if (ImGui::Button("Free")) {
             lyricDockingStyle = Free;
@@ -274,18 +279,21 @@ void LyricManager::OnImGUI() {
         }
         else {
             display = lyrics.c_str();
-        }        
+        }
+        char text[1024] = { 0 };
+        if (sprintf_s(text, lyricFormat.c_str(), display) < 0)
+            sprintf_s(text, "%s", display);
         // With AutoResize, the window rectangle doesn't get updated on the first frame somehow
         // Manually calculate text size before Begin() to correct it.
         if ((shouldShowLyrics() && !isLyricsUnavailable) || (!shouldShowLyrics() && showGUI)) {
             ImGui::SetNextWindowBgAlpha(lyricWindowOpacity);
             ImGui::PushFont(FontManager_Inst.font);
-            ImGui::SetNextWindowSize(ImGui::CalcTextSize(display) + ImGui::GetStyle().FramePadding * 2 + ImGui::GetStyle().WindowPadding);
+            ImGui::SetNextWindowSize(ImGui::CalcTextSize(text) + ImGui::GetStyle().FramePadding * 2 + ImGui::GetStyle().WindowPadding);
             ImGui::Begin(
                 "Lyric Overlay", NULL,
                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoResize
             );                   
-            ImGui::Text(display);            
+            ImGui::Text(text);
             ImGui::PopFont();
         }
         else return; // Hide the window when we want to display lyrics but there's nothing to show          
