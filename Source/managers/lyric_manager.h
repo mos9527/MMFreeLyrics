@@ -46,6 +46,8 @@ private:
     ImVec2 lyricPosBeforeMove;
 
     long exSubOffset = 0;
+    
+    void ResetDefaultCharset();
 public:
     bool isInit = false;
     // Configurable 

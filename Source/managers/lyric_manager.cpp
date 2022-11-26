@@ -17,6 +17,8 @@ bool ImGui_CursorButton(const char * ID,ImGuiMouseCursor cursor,bool flipX = fal
 void LyricManager::Init(Config& cfg) {
     if (!isInit) {
         FromConfig(cfg);
+        ResetDefaultCharset();
+        FontManager_Inst.reloadFonts = true;
         isInit = true;
     }
 }
@@ -106,6 +108,12 @@ void LyricManager::UpdateGameState(const char* state) {
     }
 }
 
+void LyricManager::ResetDefaultCharset() {
+    FontManager_Inst.charset.clear();
+    FontManager_Inst.UpdateCharset(to_wstr(LYRIC_PLACEHOLDER_MESSAGE));
+    FontManager_Inst.UpdateCharset(to_wstr(lyricFormat));
+}
+
 /* Called when Ryhthm Game / PV Session starts.*/
 void LyricManager::OnLyricsBegin() {
     LOG(L"Started PV%d", *PVID);    
@@ -124,11 +132,10 @@ void LyricManager::OnLyricsBegin() {
         if (parser->isLoaded) {
             externalLyrics = parser->getSubtitles();
             LOG(L"SubRip file loaded. Lines: %d", externalLyrics.size());
-            std::wstring buffer;
+            std::wstring buffer;            
             for (auto line : externalLyrics)
-                buffer += to_wstr(line->getText());
-            buffer += to_wstr(lyricFormat);
-            FontManager_Inst.charset.clear();
+                buffer += to_wstr(line->getText());            
+            ResetDefaultCharset();
             if (FontManager_Inst.UpdateCharset(buffer))
                 FontManager_Inst.reloadFonts = true;     
             return;
@@ -142,8 +149,7 @@ void LyricManager::OnLyricsBegin() {
         if (FontManager_Inst.PVDB_Buffer.count(*PVID)) {
             if (FontManager_Inst.PVDB_Charset_Buffer.count(*PVID) <= 0) {
                 std::wstring buffer = to_wstr(FontManager_Inst.PVDB_Buffer[*PVID]);
-                buffer += to_wstr(lyricFormat);
-                FontManager_Inst.charset.clear();
+                ResetDefaultCharset();
                 if (FontManager_Inst.UpdateCharset(buffer))
                     FontManager_Inst.reloadFonts = true;
                 FontManager_Inst.PVDB_Charset_Buffer[*PVID] = FontManager_Inst.charset;
@@ -242,7 +248,7 @@ void LyricManager::OnImGUI() {
         ImGui::PushFont(FontManager_Inst.font);
         ImGui::InputText("##", &lyricFormat);
         ImGui::PopFont();
-        if (ImGui::Button("Push to Charset"))
+        if (ImGui::Button("Force Build Font For Format"))
             if (FontManager_Inst.UpdateCharset(to_wstr(lyricFormat)))
                 FontManager_Inst.reloadFonts = true;
         ImGui::Text("Docking (Automatic Alignment)");

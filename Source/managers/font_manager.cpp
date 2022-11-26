@@ -10,8 +10,6 @@ void FontManager::Init(Config& cfg) {
             // Assign default fonts by alphabetical order
         }
         FromConfig(cfg);
-        UpdateCharset(L""); // For the placeholder meesage to be present in the first place
-        reloadFonts = true;
         isInit = true;
     }
 }
@@ -62,8 +60,7 @@ Config& FontManager::ToConfig(Config& cfg) {
 */
 int FontManager::UpdateCharset(std::wstring chars) {    
     LOG(L"Enumerating unique characters...");
-    size_t size_before = charset.size();
-    for (auto& c : LYRIC_PLACEHOLDER_MESSAGE) if (c)  charset[c] = 1;
+    size_t size_before = charset.size();    
     for (auto& c : chars) if (c) charset[c] = 1;
     LOG(L"%zd new unique characters (out of %zd) will be built into atlas.", charset.size() - size_before, chars.size());
     return (int)(charset.size() - size_before);
