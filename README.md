@@ -8,7 +8,7 @@
 <hr>
 
     本模块将利用 FreeType + ImGui 接管游戏对 PV 歌词的内部渲染，以达成更优的视觉体验
-    兼容版本 ： 1.0.2 
+    兼容版本 ： (All of them!...maybe)
 
 ## 功能
 - 游戏内样式修改 (附带 ImGui)
@@ -79,3 +79,5 @@ https://github.com/nastys/MEGAHAKUS
 https://github.com/saurabhshri/simple-yet-powerful-srt-subtitle-parser-cpp
 
 https://github.com/BroGamer4256/discord
+
+https://github.com/BroGamer4256/camera

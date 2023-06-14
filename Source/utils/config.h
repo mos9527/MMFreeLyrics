@@ -33,7 +33,7 @@ public:
 	std::string lyricFormat;
 	// ImGui Styles
 	float WindowBorderSize;
-	float WindowRounding;	
+	float WindowRounding;
 	float FontGlobalScale;
 	std::string ImGuiSettings;
 	toml::value config;
@@ -43,7 +43,7 @@ public:
 		LoadDefault();
 	}
 	bool Save();
-	bool Load();	
+	bool Load();
 	static void SaveGlobalConfig();
 	static void LoadGlobalConfig();
 };

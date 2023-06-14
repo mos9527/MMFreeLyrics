@@ -52,3 +52,94 @@ if (ImGui::Button("Load")) \
 #define SET_IMGUI_DEFAULT_FLAGS \
 	ImGui::GetIO().ConfigFlags = ImGuiConfigFlags_NavEnableKeyboard; \
 	ImGui::GetIO().IniFilename = NULL;
+
+typedef uint8_t _BYTE;
+typedef uint64_t _QWORD;
+typedef uint32_t _DWORD;
+
+struct DivaPlaybackStatus
+{
+	wchar_t wchar0;
+	__declspec(align(8)) _BYTE byte8;
+	_BYTE gap9[180003];
+	int evtNumber;
+	_QWORD qword2BF30;
+	_QWORD qword2BF38;
+	_QWORD currentPlaybackTimeQword;
+	float currentPlaybackTime;
+	_DWORD dword2BF4C;
+	_BYTE gap2BF50[40];
+	_QWORD qword2BF78;
+	_BYTE gap2BF80[40];
+	_QWORD qword2BFA8;
+	_BYTE gap2BFB0[20];
+	int int2BFC4;
+	_BYTE gap2BFC8[14];
+	_BYTE byte2BFD6;
+	_BYTE gap2BFD7[1290];
+	unsigned __int8 unsigned___int82C4E1;
+	_DWORD dword2C4E4;
+};
+inline DivaPlaybackStatus* playbackStatus;
+
+struct DivaPlaybackStatus2
+{
+	_BYTE gap1[36];
+	int isPlaying;
+};
+inline DivaPlaybackStatus2* playbackStatus2;
+
+struct PvSelector
+{
+	_DWORD diff;
+	_DWORD diffEx;
+	_QWORD pad1;
+	_QWORD pad2;
+	_QWORD gameModeIndex;
+	_DWORD PVID;
+	enum GameDifficulty {
+		Easy,
+		Normal,
+		Hard,
+		Extreme,
+		ExExtreme
+	};
+	const char* getGameDifficultyString() {
+		if (diffEx) return "ExExtreme";
+		switch (diff)
+		{
+		case 0:return "Easy";
+		case 1:return "Normal";
+		case 2:return "Hard";
+		case 3:return "Extreme";
+		default:
+			return "Easy";
+		}
+	}
+	const char* getGameModeString() {
+		switch (gameModeIndex) {
+		case 0x0:
+			return "RhythmGame";
+		case 0x1:
+			return "Practice";
+		case 0x0101:
+			return "PV Viewer";
+		case 0x010101:
+			return "PV Viewer / AltPv";
+		default:
+			return "Rhythm Game";
+		}
+	}
+};
+inline PvSelector* pvsel;
+struct PVWaitScreenInfoStruct {
+	std::string Name;
+	std::string Music;      // .music
+	std::string MusicVideo; // .illustrator
+	std::string Lyrics;     // .lyrics
+	std::string Arranger;   // .arranger
+	std::string Manipulator;// .manipulator
+	std::string PV;         // .pv_editor
+	std::string GuitarPlayer;//.guitar_player
+};
+inline PVWaitScreenInfoStruct* PVWaitScreenInfo;

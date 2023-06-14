@@ -13,7 +13,7 @@ inline void wprintf_(const wchar_t* fmt, ...) {
 		vswprintf(buf, 512, fmt, va);
 		WriteConsoleW(hdl, buf, (int)wcslen(buf), NULL, NULL);
 		va_end(va);
-	}	
+	}
 }
 
 #define LOG(fmt,...) \
